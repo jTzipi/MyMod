@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2022 Tim Langhammer
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package eu.jpangolin.jtzipi.mymod.node.path;
 
 import eu.jpangolin.jtzipi.mymod.io.ModIO;
@@ -20,9 +36,11 @@ import java.util.stream.Stream;
 /**
  * Special root path node.
  * <p>
- *     Each OS have one unique system root node.
- *     This class model this.
+ * Each OS have one unique system root node.
+ * This class model this.
  * </p>
+ *
+ * @author jTzipi
  */
 public final class RootPathNode implements IPathNode{
 
@@ -37,11 +55,13 @@ public final class RootPathNode implements IPathNode{
     private RootPathNode() {
 
     }
+
     /**
      * Return the root node of user system.
      * @return root node
      */
     public static RootPathNode create() throws IOException {
+
         OS os = OS.getSystemOS();
 
         return of( os );
@@ -93,8 +113,6 @@ public final class RootPathNode implements IPathNode{
         appendNodes( userRoot );
 
 
-
-
     }
 
     private void initUnixmac(String root) throws IOException {
@@ -118,11 +136,13 @@ public final class RootPathNode implements IPathNode{
     }
 
     private void initNa() {
+
         this.rootName = ModIO.NA;
         this.rootPath = null;
 
 
     }
+
     private void appendNodes( Iterable<Path> path ) {
 
         for( Path rootSubPath : path ) {
@@ -152,6 +172,7 @@ public final class RootPathNode implements IPathNode{
 
     @Override
     public List<INode<Path>> getSubNodes( Predicate<? super Path> predicate ) {
+
         if( null == predicate || predicate.equals( PREDICATE_ACCEPT_PATH_ALL ) ) {
             return Collections.unmodifiableList( subNodeL );
         }
@@ -230,7 +251,7 @@ public final class RootPathNode implements IPathNode{
     @Override
     public long getFileLength() {
 
-        return ModIO.DIR_LENGTH;
+        return ModIO.PATH_DIR_LENGTH;
     }
 
     @Override

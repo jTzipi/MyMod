@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Tim Langhammer
+ * Copyright (c) 2022 Tim Langhammer
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -150,7 +150,7 @@ public final class PathInfo {
 
     public static long getLength( final Path path ) {
 
-        return isDir( path ) ? ModIO.DIR_LENGTH : tof( path ).length();
+        return isDir( path ) ? ModIO.PATH_DIR_LENGTH : tof( path ).length();
     }
 
     /**

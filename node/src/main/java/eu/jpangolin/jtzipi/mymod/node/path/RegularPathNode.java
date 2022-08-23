@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2022 Tim Langhammer
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package eu.jpangolin.jtzipi.mymod.node.path;
 
 
@@ -54,6 +70,7 @@ public class RegularPathNode implements IPathNode {
 
 
     private RegularPathNode( final IPathNode parentNode, Path value ) {
+
         this.parentNode = parentNode;
         this.path = value;
     }
@@ -87,6 +104,7 @@ public class RegularPathNode implements IPathNode {
     }
 
     private void init(  ) {
+
         this.name = PathInfo.fileSystemName( path );
         this.desc = PathInfo.fileSystemTypeDesc( path );
         this.dir = PathInfo.isDir(path);
@@ -104,6 +122,7 @@ public class RegularPathNode implements IPathNode {
      * @param func function to create sub node
      */
     public void setSubNodeCreator( final BiFunction<Path, Predicate<? super Path>, List<Path>> func ) {
+
         this.createSubNodeF = func;
     }
 
@@ -113,6 +132,7 @@ public class RegularPathNode implements IPathNode {
      * @param comparator custom comparator
      */
     public void setComparator( final Comparator<? super IPathNode> comparator ) {
+
         this.comp = comparator;
     }
 
@@ -121,6 +141,7 @@ public class RegularPathNode implements IPathNode {
      * @return error info or null if creation succeeded
      */
     public String getCreationError() {
+
         return creationError;
     }
 
@@ -259,6 +280,7 @@ public class RegularPathNode implements IPathNode {
 
     @Override
     public boolean equals( final Object object ) {
+
         if ( this == object ) {
             return true;
         }

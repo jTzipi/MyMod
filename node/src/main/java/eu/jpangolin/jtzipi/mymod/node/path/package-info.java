@@ -13,8 +13,8 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 /**
- * Node Abstraction .
+ * Packe for path node.
+ * This is a file system view based on INode.
  */
-package eu.jpangolin.jtzipi.mymod.node;
+package eu.jpangolin.jtzipi.mymod.node.path;

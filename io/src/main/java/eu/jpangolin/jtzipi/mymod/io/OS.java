@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2022 Tim Langhammer
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package eu.jpangolin.jtzipi.mymod.io;
 
 
@@ -6,6 +22,11 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ * Enum of well known OS.
+ *
+ * @author jTzipi
+ */
 public enum OS {
 
     /**
@@ -32,7 +53,7 @@ public enum OS {
      * Other.
      */
     OTHER( null );
-    private static final String PROP_NA = "<unknown>";
+
     private static final Properties SYS_PROP = System.getProperties();
     // root path
     private final String path;
@@ -43,6 +64,7 @@ public enum OS {
      * @param rootPathStr path to root
      */
     OS( final String rootPathStr ) {
+
         this.path = rootPathStr;
     }
 
@@ -76,10 +98,12 @@ public enum OS {
 
     /**
      * Return OS name.
-     * @return name of OS or if not readable '<unknown>'
+     *
+     * @return name of OS or if not readable '<NA>'
      */
     public static String getOSName() {
-        return SYS_PROP.getProperty( "os.name", PROP_NA );
+
+        return SYS_PROP.getProperty( "os.name", ModIO.NA );
     }
 
     /**
@@ -87,6 +111,7 @@ public enum OS {
      * @return user home or '.' if failed to read
      */
     public static Path getHomeDir() {
+
         return Paths.get( SYS_PROP.getProperty( "user.home", "." ) );
     }
 
@@ -95,6 +120,7 @@ public enum OS {
      * @return user dir or '.' if failed to read
      */
     public static Path getUserDir() {
+
         return Paths.get(SYS_PROP.getProperty( "user.dir" , "." ));
     }
 
@@ -103,10 +129,12 @@ public enum OS {
      * @return username
      */
     public static String getUser() {
-        return SYS_PROP.getProperty( "user.name", PROP_NA );
+
+        return SYS_PROP.getProperty( "user.name", ModIO.NA );
     }
 
     private static Map<String, String> readSysProp() {
+
         return System.getenv();
     }
 
@@ -116,6 +144,7 @@ public enum OS {
      * @return path to system root
      */
     public String getRootPathStr() {
+
         return path;
     }
 }
