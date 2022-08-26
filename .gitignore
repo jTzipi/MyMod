@@ -4,8 +4,8 @@
 
 # Compiled class file
 *.class
-
-**/target/*
+# target dir
+**/target
 
 # Log file
 *.log

@@ -44,6 +44,7 @@
     </developers>
 
     <modules>
+        <module>fx</module>
         <module>io</module>
         <module>node</module>
         <module>utils</module>

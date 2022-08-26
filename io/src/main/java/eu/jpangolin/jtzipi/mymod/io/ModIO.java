@@ -16,10 +16,10 @@
 
 package eu.jpangolin.jtzipi.mymod.io;
 
+import javafx.scene.text.Font;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.DirectoryStream;
@@ -46,10 +46,23 @@ public final class ModIO {
      * Length of a file we can not determine.
      */
     public static final long LENGTH_PATH_NA = -2L;
+
+    /**
+     * Match all .
+     */
+    public static final Predicate<? super Path> ACCEPT_ANY_PATH = path -> true;
+    /**
+     * Match dirs which are no symlink only.
+     */
+    public static final Predicate<? super Path> ACCEPT_DIR_PATH = Files::isDirectory;
+
+    public static final double FONT_MIN_SIZE = 2D;
     /**
      * Match all files path filer.
      */
     public static final DirectoryStream.Filter<Path> DIR_STREAM_ACCEPT_ALL = path -> true;
+
+
     /**
      * File Time for failed read attempt.
      */
@@ -90,6 +103,13 @@ public final class ModIO {
     public static List<Path> lookupDir( Path p, Predicate<? super Path> pp ) throws IOException {
 
         return lookupDir( p, pp, false );
+    }
+
+    public static long getSubDirsOf( final Path pathToDir ) {
+
+        long cnt = 0L;
+        dir( pathToDir, cnt );
+        return cnt;
     }
 
     /**
@@ -351,6 +371,58 @@ public final class ModIO {
     }
 
     /**
+     * Load a JavaFX font from path.
+     *
+     * @param path path
+     * @param size size
+     * @return Font object
+     * @throws IOException          io loading font or {@code path} is not readable
+     * @throws NullPointerException if {@code path} is null
+     */
+    public static javafx.scene.text.Font loadFont( final Path path, final double size ) throws IOException {
+
+        Objects.requireNonNull( path );
+        // Error
+        if ( !Files.isReadable( path ) ) {
+            throw new IOException( "Path '" + path + "' is not readable" );
+        }
+
+        // try
+        final Font font;
+        try ( final InputStream io = Files.newInputStream( path ) ) {
+
+            font = Font.loadFont( io, size );
+        }
+
+        return font;
+
+    }
+
+    /**
+     * Try to load a JavaFX font or return default system font.
+     *
+     * @param path path to font
+     * @param size font size
+     * @return font or system default
+     * @throws NullPointerException if {@code path} is null
+     */
+    public static javafx.scene.text.Font loadFontSafe( final Path path, double size ) {
+
+        Objects.requireNonNull( path );
+        if ( size < FONT_MIN_SIZE ) {
+            size = FONT_MIN_SIZE;
+        }
+        Font font;
+        try {
+            font = loadFont( path, size );
+        } catch ( final IOException ioe ) {
+            LOG.info( "Failed to load font for path[='" + path + "']" );
+            font = Font.getDefault();
+        }
+        return font;
+    }
+
+    /**
      * Load Properties from path.
      *
      * @param pathToProp path to properties
@@ -434,6 +506,23 @@ public final class ModIO {
         }
 
         return ft;
+    }
+
+    private static void dir( Path path, long cnt ) {
+
+        if ( !Files.isReadable( path ) || !Files.isDirectory( path ) ) {
+            return;
+        }
+        cnt++;
+        try {
+            for ( Path dir : ModIO.lookupDir( path, ACCEPT_DIR_PATH ) ) {
+                dir( dir, cnt );
+            }
+        } catch ( IOException e ) {
+
+            LOG.info( "Failed to read dir[='" + path + "']" );
+        }
+
     }
 
     /**
