@@ -16,5 +16,12 @@
 
 package eu.jpangolin.jtzipi.mymod.io.async;
 
+/**
+ * @author jTzipi
+ */
 public class PathFinder {
+
+    //private static final
+
+
 }
