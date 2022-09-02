@@ -16,12 +16,14 @@
 
 package eu.jpangolin.jtzipi.mymod.io.async;
 
+import org.slf4j.LoggerFactory;
+
 /**
  * @author jTzipi
  */
 public class PathFinder {
 
-    //private static final
+    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger( "PathFinder" );
 
 
 }

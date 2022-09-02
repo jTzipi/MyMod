@@ -70,6 +70,13 @@ public abstract class AbstractPreloadMemoizer<K, V> {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger( AbstractPreloadMemoizer.class );
 
 
+    private static final TimeUnit DEFAULT_TIMEOUT_UNIT = TimeUnit.SECONDS;
+    private static final long DEFAULT_TIMEOUT = 170L;
+
+    // Timeout
+    private TimeUnit timeoutUn = DEFAULT_TIMEOUT_UNIT;
+    // how long
+    private long timeout = DEFAULT_TIMEOUT;
     // ExecutorService
     private final ExecutorService exeSe;
     // Cache
@@ -79,6 +86,17 @@ public abstract class AbstractPreloadMemoizer<K, V> {
     protected AbstractPreloadMemoizer( ExecutorService executorService ) {
 
         this.exeSe = null == executorService ? Executors.newCachedThreadPool() : executorService;
+    }
+
+
+    public void setTimeoutUnit( final TimeUnit timeoutUn ) {
+
+        this.timeoutUn = timeoutUn;
+    }
+
+    public void setTimeout( long timeout ) {
+
+        this.timeout = Math.max( timeout, 0L );
     }
 
     /**
@@ -114,15 +132,28 @@ public abstract class AbstractPreloadMemoizer<K, V> {
     }
 
     /**
-     * Stop this preloader.
+     * Try to finish all running tasks and shutdown.
+     *
+     * @return {@code true} if executor shut down
+     * @throws InterruptedException if await
+     */
+    public boolean stop() throws InterruptedException {
+
+        exeSe.shutdown();
+        return exeSe.awaitTermination( timeout, timeoutUn );
+    }
+
+    /**
+     * Stop this preloader without waiting.
      * <p>
      * This stop all running comp.
      * </p>
+     *
+     * @return Tasks not finished
      */
-    public void stop() {
+    public List<Runnable> stopNow() {
 
-        List<Runnable> task = exeSe.shutdownNow();
-        LOG.info( "Shutting down Preloader with following task not finished ['" + task + "']" );
+        return exeSe.shutdownNow();
     }
 
     /**

@@ -1,7 +1,7 @@
 # MyMod
 
 ## Utils common to my projects
-
-+ [node] Tree node
++ [fx] JavaFX related
 + [io] I/O
++ [node] Tree node
 + [util] other purpose

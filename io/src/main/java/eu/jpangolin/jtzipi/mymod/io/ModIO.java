@@ -22,19 +22,22 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.ImageIO;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Common IO function.
+ *
+ * @author jTzipi
  */
 public final class ModIO {
     /**
@@ -55,13 +58,19 @@ public final class ModIO {
      * Match dirs which are no symlink only.
      */
     public static final Predicate<? super Path> ACCEPT_DIR_PATH = Files::isDirectory;
-
+    /**
+     * Minimal font size.
+     */
     public static final double FONT_MIN_SIZE = 2D;
     /**
      * Match all files path filer.
      */
     public static final DirectoryStream.Filter<Path> DIR_STREAM_ACCEPT_ALL = path -> true;
 
+    /**
+     * Match all readable dirs.
+     */
+    public static final DirectoryStream.Filter<Path> DIR_STREAM_ACCEPT_DIR = Files::isDirectory;
 
     /**
      * File Time for failed read attempt.
@@ -71,7 +80,7 @@ public final class ModIO {
      * Multipurpose 'not found' placeholder.
      */
     public static final String NA = "<NA>";
-    private static final org.slf4j.Logger LOG  = LoggerFactory.getLogger( ModIO.class );
+    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger( ModIO.class );
 
     private ModIO() {
 
@@ -105,12 +114,7 @@ public final class ModIO {
         return lookupDir( p, pp, false );
     }
 
-    public static long getSubDirsOf( final Path pathToDir ) {
 
-        long cnt = 0L;
-        dir( pathToDir, cnt );
-        return cnt;
-    }
 
     /**
      * Lookup path for sub path.
@@ -162,6 +166,46 @@ public final class ModIO {
         }
 
         return nodeL;
+    }
+
+    /**
+     * Return all sub dirs.
+     *
+     * @param pathToDir root dir
+     * @param linkOps   follow link option
+     * @return all traversable dirs beneath {@code pathToDir}
+     * @throws IllegalArgumentException if {@code pathToDir} is not a dir
+     * @throws NullPointerException     if {@code pathToDir} null
+     */
+    public static List<Path> getSubDirsOf( final Path pathToDir, LinkOption... linkOps ) {
+
+        Objects.requireNonNull( pathToDir );
+        if ( !Files.isDirectory( pathToDir, linkOps ) ) {
+            throw new IllegalArgumentException( "Path[='" + pathToDir + "'] is not directory!" );
+        }
+        List<Path> pathL = new ArrayList<>();
+        findDirsRecursive( pathToDir, pathL, linkOps );
+        return pathL;
+    }
+
+    /**
+     * Return all sub dirs.
+     * This use the java nio {@link Files#find(Path, int, BiPredicate, FileVisitOption...)} method.
+     *
+     * @param pathToDir root dir
+     * @param opt       visit option
+     * @return dirs found
+     * @throws NullPointerException if
+     */
+    public static List<Path> getSubDirsOfNIO( final Path pathToDir, FileVisitOption... opt ) {
+
+        Objects.requireNonNull( pathToDir );
+        if ( !Files.isDirectory( pathToDir ) ) {
+            throw new IllegalArgumentException( "Path[='" + pathToDir + "'] is not directory!" );
+        }
+
+
+        return findDirs( pathToDir, opt );
     }
 
     /**
@@ -508,21 +552,37 @@ public final class ModIO {
         return ft;
     }
 
-    private static void dir( Path path, long cnt ) {
+    private static void findDirsRecursive( Path path, List<Path> dirList, LinkOption... lop ) {
 
-        if ( !Files.isReadable( path ) || !Files.isDirectory( path ) ) {
+        // we collect valid dirs
+        if ( !Files.isReadable( path ) || !Files.isDirectory( path, lop ) ) {
             return;
         }
-        cnt++;
-        try {
-            for ( Path dir : ModIO.lookupDir( path, ACCEPT_DIR_PATH ) ) {
-                dir( dir, cnt );
-            }
-        } catch ( IOException e ) {
 
-            LOG.info( "Failed to read dir[='" + path + "']" );
+        dirList.add( path );
+        try ( DirectoryStream<Path> dsd = Files.newDirectoryStream( path, dir -> Files.isDirectory( path, lop ) ) ) {
+            for ( Path dir : dsd ) {
+                findDirsRecursive( dir, dirList );
+            }
+        } catch ( IOException ioE ) {
+
+            LOG.info( "Failed to read dir[='" + path + "']", ioE );
         }
 
+    }
+
+    private static List<Path> findDirs( final Path rootDir, FileVisitOption... fop ) {
+
+        BiPredicate<Path, BasicFileAttributes> bp = ( Path path, BasicFileAttributes bfa ) -> Files.isReadable( path ) && bfa.isDirectory();
+
+        try ( Stream<Path> dirStream = Files.find( rootDir, Integer.MAX_VALUE, bp, fop ) ) {
+
+            return dirStream.collect( Collectors.toList() );
+        } catch ( final IOException ioE ) {
+            LOG.info( "Failed to read dir", ioE );
+
+            return Collections.emptyList();
+        }
     }
 
     /**

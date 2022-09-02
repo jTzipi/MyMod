@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
-public class TaskPathSearch extends Task<List<Path>> {
+public class SearchPathTask extends Task<List<Path>> {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger( "TaskPathSearch" );
 
@@ -45,7 +45,7 @@ public class TaskPathSearch extends Task<List<Path>> {
     private long dirc = 0L;
 
 
-    private TaskPathSearch( final Path dirPath, final Predicate<? super Path> predicate ) {
+    private SearchPathTask( final Path dirPath, final Predicate<? super Path> predicate ) {
 
         this.dir = dirPath;
         this.pp = predicate;
@@ -60,7 +60,7 @@ public class TaskPathSearch extends Task<List<Path>> {
      * @throws NullPointerException     if {@code rootPath} is null
      * @throws IllegalArgumentException if {@code rootPath} is not a dir
      */
-    public static TaskPathSearch of( final Path rootPath, Predicate<? super Path> pathPred ) {
+    public static SearchPathTask of( final Path rootPath, Predicate<? super Path> pathPred ) {
 
         Objects.requireNonNull( rootPath );
         if ( !Files.isDirectory( rootPath ) ) {
@@ -70,7 +70,7 @@ public class TaskPathSearch extends Task<List<Path>> {
         if ( null == pathPred ) {
             pathPred = ModIO.ACCEPT_ANY_PATH;
         }
-        return new TaskPathSearch( rootPath, pathPred );
+        return new SearchPathTask( rootPath, pathPred );
     }
 
     @Override
@@ -83,14 +83,17 @@ public class TaskPathSearch extends Task<List<Path>> {
 
             LOG.info( "Warn dir[='" + dir + "'] is not readable" );
             pathNotReadableL.add( dir );
+            updateProgress( 1L, 1L );
             return Collections.emptyList();
         }
 
         LOG.debug( "Start FX Search for dir[='" + dir + "']" );
 
-        dirc = ModIO.getSubDirsOf( dir );
+        List<Path> dirL = ModIO.getSubDirsOf( dir );
+        dirc = dirL.size();
         LOG.debug( "Try to test " + dirc + " dirs" );
 
+        // start search recursive with root dir
         search( dir, 1L );
         LOG.debug( "Search done. Found " + foundPathL.size() + " path" );
         return foundPathL;
@@ -129,6 +132,8 @@ public class TaskPathSearch extends Task<List<Path>> {
      */
     private void search( final Path searchPath, long dir ) {
 
+        // We enter a dir and update progress
+        updateProgress( dir, dirc );
         // either a non-readable dir or non-readable file end this
         if ( !Files.isReadable( searchPath ) ) {
 
@@ -141,7 +146,7 @@ public class TaskPathSearch extends Task<List<Path>> {
         if ( pp.test( searchPath ) ) {
             foundPathL.add( searchPath );
             updateValue( foundPathL );
-            updateProgress( dir, dirc );
+
         }
         // recursive search sub dir
         if ( Files.isDirectory( searchPath ) ) {

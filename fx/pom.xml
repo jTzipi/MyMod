@@ -26,7 +26,7 @@
         <version>1.0.0</version>
     </parent>
 
-    <artifactId>fx</artifactId>
+    <artifactId>mymod-fx</artifactId>
     <name>My Modules JavaFX</name>
     <description>Module for classes related to JavaFX</description>
 

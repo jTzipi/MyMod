@@ -51,6 +51,7 @@ public final class RootPathNode implements IPathNode{
     private final List<INode<Path>> subNodeL = new ArrayList<>();
     private String rootName;
     private Path rootPath;
+    private IOException creationError;
 
     private RootPathNode() {
 
@@ -58,9 +59,10 @@ public final class RootPathNode implements IPathNode{
 
     /**
      * Return the root node of user system.
+     *
      * @return root node
      */
-    public static RootPathNode create() throws IOException {
+    public static RootPathNode create() {
 
         OS os = OS.getSystemOS();
 
@@ -69,10 +71,11 @@ public final class RootPathNode implements IPathNode{
 
     /**
      * Return root node for OS.
+     *
      * @param os os
      * @return root node for OS
      */
-    public static RootPathNode of( OS os  ) throws IOException {
+    public static RootPathNode of( OS os ) {
 
         Objects.requireNonNull( os );
         SINGLETON.init( os );
@@ -80,21 +83,33 @@ public final class RootPathNode implements IPathNode{
         return SINGLETON;
     }
 
-    private void init( OS os ) throws IOException {
+    private void init( OS os ) {
 
         switch ( os ) {
-            case WINDOWS: initWin();break;
-            case DOS: initDos();break;
-            case MAC: initUnixmac( OS.MAC.getRootPathStr() ); break;
-            case LINUX: initUnixmac( OS.LINUX.getRootPathStr() ); break;
-            case SOLARIS: initUnixmac( OS.SOLARIS.getRootPathStr() ) ;break;
-            case OTHER: initNa();break;
+            case WINDOWS:
+                initWin();
+                break;
+            case DOS:
+                initDos();
+                break;
+            case MAC:
+                initUnixmac( OS.MAC.getRootPathStr() );
+                break;
+            case LINUX:
+                initUnixmac( OS.LINUX.getRootPathStr() );
+                break;
+            case SOLARIS:
+                initUnixmac( OS.SOLARIS.getRootPathStr() );
+                break;
+            case OTHER:
+                initNa();
+                break;
         }
 
 
     }
 
-    private void initWin() throws IOException {
+    private void initWin() {
 
         LOG.info( "-- detected Windows" );
         // set computer name
@@ -103,23 +118,33 @@ public final class RootPathNode implements IPathNode{
 
 
         final FileSystem fs = FileSystems.getDefault();
-
+        final Iterable<Path> userRoot;
         if ( null == fs ) {
-            throw new IOException( "No FileSystem!" );
+            this.creationError = new IOException( "No FileSystem!" );
+            userRoot = Collections.emptyList();
+        } else {
+            userRoot = fs.getRootDirectories();
         }
-        final Iterable<Path> userRoot = fs.getRootDirectories();
-
 
         appendNodes( userRoot );
 
 
     }
 
-    private void initUnixmac(String root) throws IOException {
+    private void initUnixmac( String root ) {
 
         this.rootName = root;
         this.rootPath = Paths.get( root );
-        appendNodes( ModIO.lookupDir( rootPath ) );
+
+        Iterable<Path> rootIt;
+
+        try {
+            rootIt = ModIO.lookupDir( rootPath );
+        } catch ( final IOException ioE ) {
+            rootIt = Collections.emptyList();
+            this.creationError = ioE;
+        }
+        appendNodes( rootIt );
 
     }
 
@@ -139,7 +164,6 @@ public final class RootPathNode implements IPathNode{
 
         this.rootName = ModIO.NA;
         this.rootPath = null;
-
 
     }
 
@@ -252,6 +276,19 @@ public final class RootPathNode implements IPathNode{
     public long getFileLength() {
 
         return ModIO.PATH_DIR_LENGTH;
+    }
+
+    @Override
+    public void requestReload() {
+
+        this.subNodeL.clear();
+        init( OS.getSystemOS() );
+    }
+
+    @Override
+    public IOException getNodeCreationError() {
+
+        return creationError;
     }
 
     @Override

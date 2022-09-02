@@ -85,6 +85,6 @@ public final class ServicePathSearch extends Service<List<Path>> {
         Predicate<? super Path> pp = fxPathPredicateProp.getValue();
 
 
-        return TaskPathSearch.of( root, pp );
+        return SearchPathTask.of( root, pp );
     }
 }

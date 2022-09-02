@@ -21,6 +21,7 @@ package eu.jpangolin.jtzipi.mymod.node.path;
 import eu.jpangolin.jtzipi.mymod.io.ModIO;
 import eu.jpangolin.jtzipi.mymod.node.INode;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 
@@ -108,13 +109,30 @@ public interface IPathNode extends INode<Path>, Comparable<IPathNode> {
 
     /**
      * File size of path in bytes or {@linkplain ModIO#PATH_DIR_LENGTH}.
+     *
      * @return length of content of path
      */
     long getFileLength();
 
     /**
+     * Set the created flag to false.
+     * <p>
+     * If you need a re creation of sub nodes or re init the path attributes call this.
+     * </p>
+     */
+    void requestReload();
+
+    /**
+     * In case of an error creating sub nodes we can get this.
+     *
+     * @return creation error
+     */
+    IOException getNodeCreationError();
+
+    /**
      * Return file creation time.
-     * @return  creation time
+     *
+     * @return creation time
      */
     FileTime getFileCreationTime();
 }

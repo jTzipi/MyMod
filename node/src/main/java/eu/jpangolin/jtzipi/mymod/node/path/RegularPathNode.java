@@ -66,7 +66,7 @@ public class RegularPathNode implements IPathNode {
     // -- RegularPathNode prop
     private BiFunction<Path, Predicate<? super Path>, List<Path>> createSubNodeF;
     private Comparator<? super IPathNode> comp;
-    private String creationError;
+    private IOException creationError;
 
 
     private RegularPathNode( final IPathNode parentNode, Path value ) {
@@ -136,14 +136,7 @@ public class RegularPathNode implements IPathNode {
         this.comp = comparator;
     }
 
-    /**
-     * Return error information if creation of sub nodes fail.
-     * @return error info or null if creation succeeded
-     */
-    public String getCreationError() {
 
-        return creationError;
-    }
 
     @Override
     public INode<Path> getParent() {
@@ -187,7 +180,7 @@ public class RegularPathNode implements IPathNode {
             } catch ( final IOException ioE ) {
 
                 this.subNodeL = Collections.emptyList();
-                this.creationError = ioE.getLocalizedMessage();
+                this.creationError = ioE;
                 LOG.info( "Error creating sub nodes", ioE );
             }
 
@@ -262,6 +255,22 @@ public class RegularPathNode implements IPathNode {
     public long getFileLength() {
 
         return fileLen;
+    }
+
+    @Override
+    public void requestReload() {
+
+        init();
+        if ( isDir() ) {
+            this.created = false;
+        }
+
+    }
+
+    @Override
+    public IOException getNodeCreationError() {
+
+        return creationError;
     }
 
     @Override
