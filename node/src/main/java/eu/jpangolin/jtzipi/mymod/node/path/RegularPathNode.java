@@ -23,7 +23,6 @@ import eu.jpangolin.jtzipi.mymod.node.INode;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.text.Collator;
@@ -31,11 +30,20 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+/**
+ * Regular Path Node.
+ * <p>
+ *  This is a wrapper for a 'regular' path.
+ *  in the file system.
+ *  <br/>
+ *
+ * </p>
+ * @author jTzipi
+ */
 public class RegularPathNode implements IPathNode {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger( RegularPathNode.class);
@@ -73,6 +81,27 @@ public class RegularPathNode implements IPathNode {
 
         this.parentNode = parentNode;
         this.path = value;
+    }
+
+    @Override
+    public String toString() {
+
+        return "RegularPathNode{" +
+                "path=" + path +
+                ", parentNode=" + parentNode +
+                ", depth=" + depth +
+                ", name='" + name + '\'' +
+                ", desc='" + desc + '\'' +
+                ", type='" + type + '\'' +
+                ", dir=" + dir +
+                ", symLink=" + symLink +
+                ", hidden=" + hidden +
+                ", readable=" + readable +
+                ", created=" + created +
+                ", fileLen=" + fileLen +
+                ", ftCreate=" + ftCreate +
+                ", creationError=" + creationError +
+                '}';
     }
 
     /**
@@ -285,6 +314,12 @@ public class RegularPathNode implements IPathNode {
         return null == comp
                 ? DEF_COMP.compare( this, o )
                 : comp.compare( this, o );
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash( path );
     }
 
     @Override

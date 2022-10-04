@@ -1,5 +1,3 @@
-
-
 /*
  * Copyright (c) 2022 Tim Langhammer
  *
@@ -24,7 +22,6 @@ import eu.jpangolin.jtzipi.mymod.node.INode;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
-
 import java.util.function.Predicate;
 
 /**
@@ -42,6 +39,9 @@ import java.util.function.Predicate;
  *
  *     </ul>
  * </p>
+ *
+ *
+ * @author jTzipi
  */
 public interface IPathNode extends INode<Path>, Comparable<IPathNode> {
 
@@ -135,4 +135,5 @@ public interface IPathNode extends INode<Path>, Comparable<IPathNode> {
      * @return creation time
      */
     FileTime getFileCreationTime();
+
 }

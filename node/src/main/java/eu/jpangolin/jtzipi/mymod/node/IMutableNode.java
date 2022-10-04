@@ -16,6 +16,14 @@
 
 package eu.jpangolin.jtzipi.mymod.node;
 
+/**
+ * Mutable Node.
+ * <p>
+ *     Added setter methods.
+ * </p>
+ * @param <T> type of node
+ * @author jTzipi
+ */
 public interface IMutableNode<T> extends INode<T> {
 
     /**

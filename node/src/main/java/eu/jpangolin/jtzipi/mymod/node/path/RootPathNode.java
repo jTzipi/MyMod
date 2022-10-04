@@ -23,7 +23,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -132,7 +135,7 @@ public final class RootPathNode implements IPathNode{
     }
 
     private void initUnixmac( String root ) {
-
+        LOG.info( "-- detected Linux/Mac/Unix" );
         this.rootName = root;
         this.rootPath = Paths.get( root );
 
@@ -270,6 +273,17 @@ public final class RootPathNode implements IPathNode{
     public boolean isHidden() {
 
         return false;
+    }
+
+    @Override
+    public String toString() {
+
+        return "RootPathNode{" +
+                "subNodeL={" + subNodeL
+                + "}, readable='" + isReadable()
+                + "', hidden='" + isHidden()
+                + "', depth='" + getDepth()
+                +'}';
     }
 
     @Override

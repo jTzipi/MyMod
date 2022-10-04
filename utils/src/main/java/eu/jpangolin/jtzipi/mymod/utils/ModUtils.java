@@ -18,6 +18,8 @@ package eu.jpangolin.jtzipi.mymod.utils;
 
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Objects;
 
 /**
@@ -59,6 +61,19 @@ public final class ModUtils {
         }
 
         return ret;
+    }
+
+    /**
+     * Round a double value to 'nc' positions.
+     * @param value value
+     * @param nc position
+     * @return rounded value
+     */
+    public static double round( double value, int nc ) {
+        nc = Math.max( 0, nc );
+        BigDecimal bd = new BigDecimal( Double.toString( value ) );
+        bd = bd.setScale( nc, RoundingMode.HALF_UP );
+        return bd.doubleValue();
     }
 
     /**

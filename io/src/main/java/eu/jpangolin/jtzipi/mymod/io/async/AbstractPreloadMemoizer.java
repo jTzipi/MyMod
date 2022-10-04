@@ -82,18 +82,36 @@ public abstract class AbstractPreloadMemoizer<K, V> {
     // Cache
     private final ConcurrentMap<K, Future<V>> cMap = new ConcurrentHashMap<>();
 
-
+    /**
+     * Constructor.
+     * @param executorService exec service
+     */
     protected AbstractPreloadMemoizer( ExecutorService executorService ) {
 
         this.exeSe = null == executorService ? Executors.newCachedThreadPool() : executorService;
     }
 
-
-    public void setTimeoutUnit( final TimeUnit timeoutUn ) {
-
-        this.timeoutUn = timeoutUn;
+    /**
+     * Default constructor.
+     */
+    public AbstractPreloadMemoizer() {
+        this(Executors.newCachedThreadPool());
     }
 
+    /**
+     * Set timeout unit.
+     * @param timeoutUn timeout unit
+     */
+    public void setTimeoutUnit( final TimeUnit timeoutUn ) {
+
+        this.timeoutUn = null == timeoutUn ? DEFAULT_TIMEOUT_UNIT : timeoutUn;
+    }
+
+    /**
+     * Set timeout value.
+     * if {@code timeout} is lower than 0 we use 0.
+     * @param timeout timeout
+     */
     public void setTimeout( long timeout ) {
 
         this.timeout = Math.max( timeout, 0L );
@@ -105,30 +123,35 @@ public abstract class AbstractPreloadMemoizer<K, V> {
      * @param arg argument
      * @return value
      */
-    public abstract V compute( final K arg );
+     protected abstract V compute( final K arg );
 
     /**
-     * Start async computation and return the wrapping future.
+     * Start async computation and cache the future.
      *
      * @param arg argument
-     * @return the newly created future wrapper or if already cached the cached version
+     *
      * @throws IllegalArgumentException if {@code arg} is null
      */
-    public Future<V> start( final K arg ) {
+    public void start( final K arg ) {
 
         if ( null == arg ) {
             throw new IllegalArgumentException( "Null is not allowed" );
         }
 
         LOG.info( "try to get future for key '" + arg + "'" );
-        return cMap.computeIfAbsent( arg, key -> exeSe.submit( () -> compute( arg ) ) );
 
-/*        Future<V> f = cMap.get( arg );
+        // THIS IS THE APPROACH IF WE WANT TO RETURN THE FUTURE
+        // cMap.computeIfAbsent( arg, key -> exeSe.submit( () -> compute( arg ) ) );
+
+        Future<V> f = cMap.get( arg );
         if( null == f) {
 
-            f = cMap.putIfAbsent( arg, exeSe.submit( () -> compute( arg ) ) );
+            LOG.info( "Start computation for key '{}'", arg );
+            cMap.putIfAbsent( arg, exeSe.submit( () -> compute( arg ) ) );
+        } else {
+            LOG.warn( "Try to start computation for already known key '{}'", arg );
         }
-        return f; */
+
     }
 
     /**
@@ -156,6 +179,14 @@ public abstract class AbstractPreloadMemoizer<K, V> {
         return exeSe.shutdownNow();
     }
 
+    /**
+     * Return whether the key is contained.
+     * @param key key
+     * @return {@code true} if {@code key} is cached
+     */
+    public final boolean isMemoized( K key ) {
+        return cMap.containsKey( key );
+    }
     /**
      * Return the future of an async comp.
      *

@@ -20,6 +20,7 @@ import javafx.scene.text.Font;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.*;
@@ -28,7 +29,6 @@ import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
-
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -86,6 +86,30 @@ public final class ModIO {
 
         throw new AssertionError();
     }
+
+    /**
+     * Read  resource bundle.
+     * @param cls class from which location the resource loaded
+     * @param resourceFileStr name of resource
+     * @return resource bundle
+     * @throws IOException if ioe
+     * @throws NullPointerException if {@code cls}|{@code resourceFileStr} is null
+     * @throws IllegalStateException if resource is not readable
+     */
+    public static ResourceBundle loadResourceBundle( final Class<?> cls, final String resourceFileStr ) throws IOException {
+        Objects.requireNonNull( cls );
+
+        ResourceBundle resBu;
+        try( final InputStream resIS = cls.getResourceAsStream(  resourceFileStr ) ) {
+            if( null == resIS ) {
+                throw new IllegalStateException("ResourceBundle[='"+ resourceFileStr +"'] not readable");
+            }
+            resBu = new PropertyResourceBundle( resIS );
+
+        }
+        return resBu;
+    }
+
 
     /**
      * Try to load all sub path's of path p.
@@ -513,6 +537,87 @@ public final class ModIO {
         loadProperties( path, prop );
 
         return prop;
+    }
+
+    /**
+     * Read a '.properties'-file as a resource located file.
+     * @param cls cls
+     * @param fileStr file name
+     * @return properties
+     * @throws IOException if file not readable
+     * @throws IllegalStateException if stream is null
+     * @throws NullPointerException if {@code cls}|{@code fileStr} is null
+     */
+    public static Properties loadPropertiesFromResource( Class<?> cls , String fileStr) throws IOException {
+        Objects.requireNonNull(cls);
+        Objects.requireNonNull( fileStr );
+        Properties prop = new Properties();
+        LOG.info( "try to load '" + fileStr + "' from '" + cls.getSimpleName()+ "'" );
+        try ( InputStream is = cls.getResourceAsStream( fileStr ) ) {
+
+            if ( null == is ) {
+                throw new IllegalStateException( "File not found or not readable" );
+            }
+            prop.load( is );
+
+        }
+        LOG.info( "'" + fileStr + "' loaded Okay!" );
+        return prop;
+
+    }
+
+    /**
+     * Load a resource.
+     * @param cls cls to load from
+     * @param fileStr file name
+     * @param appendNewLine append new line ({@literal \n}
+     * @return String Builder with file content
+     * @throws IOException fail to load
+     * @throws NullPointerException if {@code cls}|{@code fileStr}
+     */
+    public static StringBuilder loadResource( final Class<?>cls, String fileStr, boolean appendNewLine ) throws IOException {
+        Objects.requireNonNull( cls, "class is null" );
+        Objects.requireNonNull( fileStr, "File is null!" );
+        StringBuilder sb = new StringBuilder();
+
+        try(InputStream resIs = cls.getResourceAsStream( fileStr )){
+            if( null == resIs) {
+                throw new IOException("InputStream for resource '"+fileStr+"' can not created!Was null!");
+            }
+
+            Scanner scan = new Scanner( resIs );
+            while ( scan.hasNextLine() ){
+                sb.append( scan.nextLine() );
+                if( appendNewLine ){
+                    sb.append('\n');
+
+                }
+            }
+        }
+
+        return sb;
+    }
+    /**
+     * Write global JaMeLime properties file.
+     * @param prop properties
+     * @param comment comment (optional)
+     * @throws IOException io
+     * @throws NullPointerException if {@code prop} is null
+     */
+    public static void writePropertiesToPath( Path path, Properties prop, String comment ) throws IOException {
+        Objects.requireNonNull( path )
+        ;
+        Objects.requireNonNull( prop );
+
+        if( null == comment ) {
+            comment ="<?>";
+        }
+
+        try( BufferedWriter bw = Files.newBufferedWriter( path ) ) {
+            prop.store( bw, comment );
+        }
+
+        LOG.info( "Wrote to '" + path + "' Properties!" );
     }
 
     /**
