@@ -59,6 +59,7 @@
     <lib.junit.version>5.9.0</lib.junit.version>
         <lib.apache.codec>1.15</lib.apache.codec>
         <lib.openjfx.version>17.0.2</lib.openjfx.version>
+        <lib.bouncycastle>1.72</lib.bouncycastle>
     </properties>
 
 
@@ -123,6 +124,12 @@
             <version>${lib.junit.version}</version>
             <scope>test</scope>
         </dependency>
+            <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on -->
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk18on</artifactId>
+                <version>${lib.bouncycastle}</version>
+            </dependency>
 
         </dependencies>
     </dependencyManagement>

@@ -30,6 +30,13 @@
     <name>My Modules IO</name>
 
     <dependencies>
+
+        <dependency>
+            <groupId>eu.jpangolin.jtzipi.mymod</groupId>
+            <artifactId>mymod-utils</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>

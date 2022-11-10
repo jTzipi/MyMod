@@ -2,10 +2,16 @@ package eu.jpangolin.jtzipi.mymod.io.svg;
 
 /**
  * Svg sprite provider enum.
- * This store the information of the file and the regular exp. to find the svg d path
+ * This store the information of the file and the regular exp. to find the svg d path.
+ *
+ *
  */
 public enum SpritesProvider {
 
+    /**
+     * Font Awesome.
+     * See <a href="https://fontawesome.com" alt="Font Awesome">this</a> page for info.
+     */
     FONT_AWESOME_SOLID("svg.fontawesome.solid.file", "svg.fontawesome.solid.regex.path"),;
 
     private final String fileName;

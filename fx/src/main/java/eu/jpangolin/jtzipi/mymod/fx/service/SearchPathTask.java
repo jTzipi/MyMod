@@ -29,6 +29,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+/**
+ * FX Task to search for path.
+ *
+ * @author jTzipi
+ */
 public class SearchPathTask extends Task<List<Path>> {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger( "TaskPathSearch" );

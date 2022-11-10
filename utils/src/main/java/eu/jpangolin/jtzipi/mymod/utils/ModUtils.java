@@ -16,10 +16,12 @@
 
 package eu.jpangolin.jtzipi.mymod.utils;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.security.Security;
 import java.util.Objects;
 
 /**
@@ -64,16 +66,42 @@ public final class ModUtils {
     }
 
     /**
-     * Round a double value to 'nc' positions.
+     * Round a double value to 'nc' positions rounding half up.
      * @param value value
      * @param nc position
      * @return rounded value
      */
     public static double round( double value, int nc ) {
+return round( value, nc, RoundingMode.HALF_UP );
+    }
+
+    /**
+     * Round a double to value to 'nc' positions.
+     * @param value value
+     * @param nc position after .
+     * @param rmode rounding mode if
+     * @return rounded value
+     */
+    public static double round( double value, int nc, RoundingMode rmode ) {
+        if( null == rmode ) {
+            rmode = RoundingMode.HALF_UP;
+        }
         nc = Math.max( 0, nc );
         BigDecimal bd = new BigDecimal( Double.toString( value ) );
-        bd = bd.setScale( nc, RoundingMode.HALF_UP );
+        bd = bd.setScale( nc, rmode );
         return bd.doubleValue();
+    }
+
+    /**
+     * Register 'Bouncy Castle' Provider.
+     */
+    public static void registerBouncyCastleProvider() {
+
+         int pp = Security.addProvider( new BouncyCastleProvider() );
+         LOG.info( "Added BC Provider on position {}",pp );
+         if( -1 == pp ) {
+             LOG.warn( "BC Provider already installed" );
+         }
     }
 
     /**

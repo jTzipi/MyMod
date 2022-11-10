@@ -47,17 +47,17 @@ import java.util.stream.Stream;
  */
 public final class RootPathNode implements IPathNode{
 
-    private static final RootPathNode SINGLETON = new RootPathNode();
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger( RootPathNode.class );
-
     private final List<INode<Path>> subNodeL = new ArrayList<>();
+    private final OS os;
     private String rootName;
     private Path rootPath;
     private IOException creationError;
 
-    private RootPathNode() {
 
+    private RootPathNode(OS os) {
+this.os = os;
     }
 
     /**
@@ -81,12 +81,12 @@ public final class RootPathNode implements IPathNode{
     public static RootPathNode of( OS os ) {
 
         Objects.requireNonNull( os );
-        SINGLETON.init( os );
-
-        return SINGLETON;
+        RootPathNode rpt = new RootPathNode( os );
+        rpt.init(  );
+        return rpt;
     }
 
-    private void init( OS os ) {
+    private void init(  ) {
 
         switch ( os ) {
             case WINDOWS:
@@ -179,6 +179,13 @@ public final class RootPathNode implements IPathNode{
         subNodeL.add( RegularPathNode.of( this, OS.getHomeDir() ) );
     }
 
+    /**
+     * Return wrapped os.
+     * @return os
+     */
+    public OS getOs() {
+        return os;
+    }
     @Override
     public INode<Path> getParent() {
 
@@ -219,6 +226,12 @@ public final class RootPathNode implements IPathNode{
     public boolean isLeaf() {
 
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash( os );
     }
 
     @Override
@@ -296,7 +309,7 @@ public final class RootPathNode implements IPathNode{
     public void requestReload() {
 
         this.subNodeL.clear();
-        init( OS.getSystemOS() );
+        init(  );
     }
 
     @Override

@@ -32,9 +32,17 @@
 
 
     <dependencies>
+        <!-- MyMod:Io -->
         <dependency>
             <groupId>eu.jpangolin.jtzipi.mymod</groupId>
             <artifactId>mymod-io</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- MyMod:Utils -->
+        <dependency>
+            <groupId>eu.jpangolin.jtzipi.mymod</groupId>
+            <artifactId>mymod-utils</artifactId>
             <version>${project.version}</version>
         </dependency>
 
