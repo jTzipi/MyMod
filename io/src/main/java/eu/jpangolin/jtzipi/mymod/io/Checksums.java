@@ -16,7 +16,7 @@
 
 package eu.jpangolin.jtzipi.mymod.io;
 
-import eu.jpangolin.jtzipi.mymod.utils.ModUtils;
+
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.LoggerFactory;
@@ -28,12 +28,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.util.Objects;
 
 /**
  * Checksum Utils.
+ * <p>
+ * Several methods to compute hash value.
+ * </p>
  *
  * @author jTzipi
  */
@@ -47,6 +48,10 @@ public final class Checksums {
      * Large Buffer Size.
      */
     public static final int LARGE_BUF_SIZE = 2_097_152;     // 2^21
+    /**
+     * Default MD.
+     * - SHA512 -
+     */
     public static final MessageDigest DEFAULT_DIGEST = DigestUtils.getSha512Digest();
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger( "Checksums" );
     private static final long LARGE_FILE = 4_194_304L;
@@ -56,6 +61,7 @@ public final class Checksums {
     }
 
     private static void checkPath( final Path path ) throws IOException {
+
         Objects.requireNonNull( path, "path should be != null" );
 
         // File readable
@@ -73,11 +79,11 @@ public final class Checksums {
     }
 
     private static int calcBuffer( int buffer, long fsize ) {
-
+        assert fsize > 0L;
 
         if( fsize >= LARGE_FILE && buffer < LARGE_BUF_SIZE ) {
             buffer = LARGE_BUF_SIZE;
-            LOG.info( "Detect large file[="+ fsize + "] Use Large Buffer" );
+            LOG.info( "Detect large file[={}] and small buffer[={}] Use Large Buffer", fsize, buffer );
         } else {
             buffer = Math.max( buffer, MIN_BUF_SIZE );
             LOG.info( "Detect normal file set buffer to " + buffer );
@@ -87,8 +93,40 @@ public final class Checksums {
     }
 
     private static int bufferFor( long fileSize ) {
+
         return fileSize < LARGE_BUF_SIZE ? MIN_BUF_SIZE : LARGE_BUF_SIZE;
     }
+
+    /**
+     * Calculate hash value for a file using streaming.
+     *
+     * @param path path
+     * @return hash
+     * @throws IOException              file is not readable or stream failed
+     * @throws IllegalArgumentException if {@code path} is a dir
+     * @throws NullPointerException     if {@code path} is null
+     */
+    public static String calcHashStreaming( final Path path ) throws IOException {
+
+        return calcHashStreaming( path, DEFAULT_DIGEST );
+    }
+
+    /**
+     * Calculate hash value for a file using streaming.
+     *
+     * @param path path
+     * @param md   message digest
+     * @return hash
+     * @throws IOException              {@code path} is not readable
+     * @throws NullPointerException     if {@code path} is null
+     * @throws IllegalArgumentException if {@code path} is not a file
+     */
+    public static String calcHashStreaming( final Path path, MessageDigest md ) throws IOException {
+
+        int buffer = bufferFor( Files.size( path ) );
+        return calcHashStreaming( path, md, buffer );
+    }
+
     /**s
      * Calculate hash value for path using DigestInputStream.
      * @param path path to file
@@ -100,6 +138,7 @@ public final class Checksums {
      * @throws NullPointerException if {@code path} is
      */
     public static String calcHashStreaming( final Path path, MessageDigest md, int bufSize ) throws IOException {
+
         checkPath( path );
 
 // default digest
@@ -112,7 +151,7 @@ public final class Checksums {
 
         byte[] buffer = new byte[bufSize];
         try( FileInputStream fis = new FileInputStream( path.toFile());
-                BufferedInputStream buf = new BufferedInputStream( fis );
+             BufferedInputStream buf = new BufferedInputStream( fis );
              DigestInputStream dis = new DigestInputStream( buf, md ) ) {
 
             // Feed data into digest stream
@@ -131,6 +170,26 @@ public final class Checksums {
 
     }
 
+    /**
+     * Calculate hash value for file default.
+     *
+     * @param path path to file
+     * @return hash
+     * @throws IOException
+     */
+    public static String calcHashDefault( final Path path ) throws IOException {
+
+        return calcHashDefault( path, DEFAULT_DIGEST );
+    }
+
+    /**
+     * Calculate hash value for file default.
+     *
+     * @param path path to file
+     * @param md   md
+     * @return hash value
+     * @throws IOException
+     */
     public static String calcHashDefault( final Path path, MessageDigest md ) throws IOException {
 
         int buffer = bufferFor( Files.size( path ) );
@@ -155,7 +214,7 @@ public final class Checksums {
 // default digest
         if ( null == md ) {
 
-            md = DigestUtils.getSha256Digest();
+            md = DEFAULT_DIGEST;
         }
 
         LOG.info( "Calculate Hash using '{}' with buffer size {}" , md, bufSize );
@@ -178,14 +237,27 @@ int read;
 
     }
 
+    /**
+     * Try to compute hash value of a file via apache common codec.
+     *
+     * @param path path
+     * @return hash value
+     * @throws IOException              {@code path} is not readable
+     * @throws NullPointerException     if {@code path} is null
+     * @throws IllegalArgumentException if {@code path} is not a file
+     */
+    public static String calcHashCommonCodec( final Path path ) throws IOException {
+
+        return calcHashCommonCodec( path, DEFAULT_DIGEST );
+    }
 
     /**
-     * Try to compute hash value of a file.
+     * Try to compute hash value of a file via apache common codec.
      *
      * @param path path to file . Should be no dir
      * @param md   message digest. If {@code null} we use {@link DigestUtils#getSha256Digest()}
      * @return hash value of file
-     * @throws IOException {@code path} is not readable
+     * @throws IOException              {@code path} is not readable
      * @throws NullPointerException     if {@code path} is null
      * @throws IllegalArgumentException if {@code path} is not a file
      */
@@ -195,7 +267,7 @@ int read;
         // set default
         if ( null == md ) {
 
-            md = DigestUtils.getSha256Digest();
+            md = DEFAULT_DIGEST;
         }
 
 
@@ -203,25 +275,5 @@ int read;
         return Hex.encodeHexString( hash );
     }
 
-    /**
-     * Try to compute hash value via Bouncy Castle Provider.
-     * @param path path to file.
-     * @param mdName Digest name
-     * @param bufSize buffer size
-     * @return hash value
-     * @throws NoSuchAlgorithmException if {@code mdName} is unknown
-     * @throws NoSuchProviderException if provider is not known
-     * @throws IOException if path is not readable i/o error
-     * @throws IllegalArgumentException if {@code path} is not a file
-     * @throws NullPointerException if {@code path} is null
-     */
-    public static String calcHashBouncyCastle( final Path path, String mdName, int bufSize ) throws NoSuchAlgorithmException, NoSuchProviderException, IOException {
 
-        // add 'BC' Provider
-        ModUtils.registerBouncyCastleProvider();
-
-        MessageDigest messageDigest = MessageDigest.getInstance( mdName, "BC" );
-
-        return calcHashDefault( path, messageDigest, bufSize );
-    }
 }

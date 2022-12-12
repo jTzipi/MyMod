@@ -55,7 +55,7 @@
         <maven.compiler.target>11</maven.compiler.target>
         <maven.plugin.source>3.2.1</maven.plugin.source>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <lib.slf4j.version>2.0.1</lib.slf4j.version>
+    <lib.slf4j.version>2.0.4</lib.slf4j.version>
     <lib.junit.version>5.9.0</lib.junit.version>
         <lib.apache.codec>1.15</lib.apache.codec>
         <lib.openjfx.version>17.0.2</lib.openjfx.version>
