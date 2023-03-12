@@ -18,7 +18,7 @@ public final class Nodes {
         Objects.requireNonNull( nodeList );
         return nodeList.stream()
                 .map( pn -> pn instanceof IPathNode
-                        ? (IPathNode)pn
+                        ? ( IPathNode ) pn
                         : RegularPathNode.of( parentNode, pn.getValue() ) )
                 .collect( Collectors.toList() );
     }

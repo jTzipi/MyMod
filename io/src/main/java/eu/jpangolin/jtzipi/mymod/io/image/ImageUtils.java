@@ -90,10 +90,11 @@ public final class ImageUtils {
     }
 
     /**
-     * Try to read the image dimension of a image.
+     * Try to read the image dimension of an image.
+     *
      * @param path path to image
      * @return image dimension or {@link }
-     * @throws IOException if {@code path} is not readable or no image reader can be found
+     * @throws IOException          if {@code path} is not readable or no image reader can be found
      * @throws NullPointerException if {@code path} is null
      */
     public static ImageDimension getImageDimensionOf( final Path path ) throws IOException {
@@ -118,7 +119,7 @@ public final class ImageUtils {
                 LOG.debug( "... found reader" );
             } else {
 
-                throw new IOException( "No image reader found for image[=++]" );
+                throw new IOException( "No image reader found for image[='" + path + "']" );
             }
         }
 
@@ -169,16 +170,16 @@ public final class ImageUtils {
      * <p>Returns a new compatible image with the same width, height and
      * transparency as the image specified as a parameter.</p>
      *
+     * @param image the reference image from which the dimension and the
+     *              transparency of the new image are obtained
+     * @return a new compatible <code>BufferedImage</code> with the same
+     * dimension and transparency as <code>image</code>
      * @see Transparency
      * @see #createCompatibleImage(int, int)
      * @see #createCompatibleImage(BufferedImage, int, int)
      * @see #createTranslucentCompatibleImage(int, int)
      * @see #loadCompatibleImage(URL)
      * @see #toCompatibleImage(BufferedImage)
-     * @param image the reference image from which the dimension and the
-     *   transparency of the new image are obtained
-     * @return a new compatible <code>BufferedImage</code> with the same
-     *   dimension and transparency as <code>image</code>
      */
     public static BufferedImage createCompatibleImage( final BufferedImage image ) {
 
@@ -189,18 +190,18 @@ public final class ImageUtils {
      * <p>Returns a new compatible image of the specified width and height, and
      * the same transparency setting as the image specified as a parameter.</p>
      *
+     * @param width  the width of the new image
+     * @param height the height of the new image
+     * @param image  the reference image from which the transparency of the new
+     *               image is obtained
+     * @return a new compatible <code>BufferedImage</code> with the same
+     * transparency as <code>image</code> and the specified dimension
      * @see Transparency
      * @see #createCompatibleImage(BufferedImage)
      * @see #createCompatibleImage(int, int)
      * @see #createTranslucentCompatibleImage(int, int)
      * @see #loadCompatibleImage(URL)
      * @see #toCompatibleImage(BufferedImage)
-     * @param width the width of the new image
-     * @param height the height of the new image
-     * @param image the reference image from which the transparency of the new
-     *   image is obtained
-     * @return a new compatible <code>BufferedImage</code> with the same
-     *   transparency as <code>image</code> and the specified dimension
      */
     public static BufferedImage createCompatibleImage( final BufferedImage image,
                                                        final int width, final int height ) {
@@ -213,15 +214,15 @@ public final class ImageUtils {
      * <p>Returns a new opaque compatible image of the specified width and
      * height.</p>
      *
+     * @param width  the width of the new image
+     * @param height the height of the new image
+     * @return a new opaque compatible <code>BufferedImage</code> of the
+     * specified width and height
      * @see #createCompatibleImage(BufferedImage)
      * @see #createCompatibleImage(BufferedImage, int, int)
      * @see #createTranslucentCompatibleImage(int, int)
      * @see #loadCompatibleImage(URL)
      * @see #toCompatibleImage(BufferedImage)
-     * @param width the width of the new image
-     * @param height the height of the new image
-     * @return a new opaque compatible <code>BufferedImage</code> of the
-     *   specified width and height
      */
     public static BufferedImage createCompatibleImage( final int width, final int height ) {
 
@@ -233,15 +234,15 @@ public final class ImageUtils {
      * <p>Returns a new translucent compatible image of the specified width
      * and height.</p>
      *
+     * @param width  the width of the new image
+     * @param height the height of the new image
+     * @return a new translucent compatible <code>BufferedImage</code> of the
+     * specified width and height
      * @see #createCompatibleImage(BufferedImage)
      * @see #createCompatibleImage(BufferedImage, int, int)
      * @see #createCompatibleImage(int, int)
      * @see #loadCompatibleImage(URL)
      * @see #toCompatibleImage(BufferedImage)
-     * @param width the width of the new image
-     * @param height the height of the new image
-     * @return a new translucent compatible <code>BufferedImage</code> of the
-     *   specified width and height
      */
     public static BufferedImage createTranslucentCompatibleImage( final int width,
                                                                   final int height ) {
@@ -255,15 +256,15 @@ public final class ImageUtils {
      * specified location and then turned, if necessary into a compatible
      * image.</p>
      *
+     * @param resource the URL of the picture to load as a compatible image
+     * @return a new translucent compatible <code>BufferedImage</code> of the
+     * specified width and height
+     * @throws IOException if the image cannot be read or loaded
      * @see #createCompatibleImage(BufferedImage)
      * @see #createCompatibleImage(BufferedImage, int, int)
      * @see #createCompatibleImage(int, int)
      * @see #createTranslucentCompatibleImage(int, int)
      * @see #toCompatibleImage(BufferedImage)
-     * @param resource the URL of the picture to load as a compatible image
-     * @return a new translucent compatible <code>BufferedImage</code> of the
-     *   specified width and height
-     * @throws IOException if the image cannot be read or loaded
      */
     public static BufferedImage loadCompatibleImage( final URL resource )
             throws IOException {
@@ -277,14 +278,14 @@ public final class ImageUtils {
      * image. This method ensures an image is compatible with the hardware,
      * and therefore optimized for fast blitting operations.</p>
      *
+     * @param image the image to copy into a new compatible image
+     * @return a new compatible copy, with the
+     * same width and height and transparency and content, of <code>image</code>
      * @see #createCompatibleImage(BufferedImage)
      * @see #createCompatibleImage(BufferedImage, int, int)
      * @see #createCompatibleImage(int, int)
      * @see #createTranslucentCompatibleImage(int, int)
      * @see #loadCompatibleImage(URL)
-     * @param image the image to copy into a new compatible image
-     * @return a new compatible copy, with the
-     *   same width and height and transparency and content, of <code>image</code>
      */
     public static BufferedImage toCompatibleImage( final BufferedImage image ) {
 
@@ -313,15 +314,15 @@ public final class ImageUtils {
      * to ensure the quality of the result without sacrificing too much
      * performance.</p>
      *
+     * @param image   the source image
+     * @param newSize the length of the largest dimension of the thumbnail
+     * @return a new compatible <code>BufferedImage</code> containing a
+     * thumbnail of <code>image</code>
+     * @throws IllegalArgumentException if <code>newSize</code> is larger than
+     *                                  the largest dimension of <code>image</code> or &lt;= 0
      * @see #createThumbnailFast(BufferedImage, int, int)
      * @see #createThumbnail(BufferedImage, int)
      * @see #createThumbnail(BufferedImage, int, int)
-     * @param image the source image
-     * @param newSize the length of the largest dimension of the thumbnail
-     * @return a new compatible <code>BufferedImage</code> containing a
-     *   thumbnail of <code>image</code>
-     * @throws IllegalArgumentException if <code>newSize</code> is larger than
-     *   the largest dimension of <code>image</code> or &lt;= 0
      */
     public static BufferedImage createThumbnailFast( final BufferedImage image,
                                                      final int newSize ) {
@@ -375,18 +376,18 @@ public final class ImageUtils {
      * to ensure the quality of the result without sacrificing too much
      * performance.</p>
      *
+     * @param image     the source image
+     * @param newWidth  the width of the thumbnail
+     * @param newHeight the height of the thumbnail
+     * @return a new compatible <code>BufferedImage</code> containing a
+     * thumbnail of <code>image</code>
+     * @throws IllegalArgumentException if <code>newWidth</code> is larger than
+     *                                  the width of <code>image</code> or if <code>newHeight</code> is larger
+     *                                  than the height of <code>image</code> or if one of the dimensions
+     *                                  is &lt;= 0
      * @see #createThumbnailFast(BufferedImage, int)
      * @see #createThumbnail(BufferedImage, int)
      * @see #createThumbnail(BufferedImage, int, int)
-     * @param image the source image
-     * @param newWidth the width of the thumbnail
-     * @param newHeight the height of the thumbnail
-     * @return a new compatible <code>BufferedImage</code> containing a
-     *   thumbnail of <code>image</code>
-     * @throws IllegalArgumentException if <code>newWidth</code> is larger than
-     *   the width of <code>image</code> or if <code>newHeight</code> is larger
-     *   than the height of <code>image</code> or if one of the dimensions
-     *   is &lt;= 0
      */
     public static BufferedImage createThumbnailFast( final BufferedImage image,
                                                      final int newWidth, final int newHeight ) {
@@ -422,15 +423,15 @@ public final class ImageUtils {
      * the new size is less than half the longest dimension of the source
      * image, yet the rendering speed is almost similar.</p>
      *
+     * @param image   the source image
+     * @param newSize the length of the largest dimension of the thumbnail
+     * @return a new compatible <code>BufferedImage</code> containing a
+     * thumbnail of <code>image</code>
+     * @throws IllegalArgumentException if <code>newSize</code> is larger than
+     *                                  the largest dimension of <code>image</code> or &lt;= 0
      * @see #createThumbnailFast(BufferedImage, int, int)
      * @see #createThumbnailFast(BufferedImage, int)
      * @see #createThumbnail(BufferedImage, int, int)
-     * @param image the source image
-     * @param newSize the length of the largest dimension of the thumbnail
-     * @return a new compatible <code>BufferedImage</code> containing a
-     *   thumbnail of <code>image</code>
-     * @throws IllegalArgumentException if <code>newSize</code> is larger than
-     *   the largest dimension of <code>image</code> or &lt;= 0
      */
     public static BufferedImage createThumbnail( final BufferedImage image,
                                                  final int newSize ) {
@@ -497,17 +498,17 @@ public final class ImageUtils {
      * the new size is less than half the longest dimension of the source
      * image, yet the rendering speed is almost similar.</p>
      *
+     * @param image     the source image
+     * @param newWidth  the width of the thumbnail
+     * @param newHeight the height of the thumbnail
+     * @return a new compatible <code>BufferedImage</code> containing a
+     * thumbnail of <code>image</code>
+     * @throws IllegalArgumentException if <code>newWidth</code> is larger than
+     *                                  the width of <code>image</code> or if <code>newHeight</code> is larger
+     *                                  than the height of <code>image or if one the dimensions is not &gt; 0</code>
      * @see #createThumbnailFast(BufferedImage, int)
      * @see #createThumbnailFast(BufferedImage, int, int)
      * @see #createThumbnail(BufferedImage, int)
-     * @param image the source image
-     * @param newWidth the width of the thumbnail
-     * @param newHeight the height of the thumbnail
-     * @return a new compatible <code>BufferedImage</code> containing a
-     *   thumbnail of <code>image</code>
-     * @throws IllegalArgumentException if <code>newWidth</code> is larger than
-     *   the width of <code>image</code> or if <code>newHeight</code> is larger
-     *   than the height of <code>image or if one the dimensions is not &gt; 0</code>
      */
     public static BufferedImage createThumbnail( final BufferedImage image,
                                                  final int newWidth, final int newHeight ) {
@@ -561,16 +562,16 @@ public final class ImageUtils {
      * an image of type different from <code>BufferedImage.TYPE_INT_ARGB</code>
      * and <code>BufferedImage.TYPE_INT_RGB</code> will unmanage the image.</p>
      *
-     * @param img the source image
-     * @param x the x location at which to start grabbing pixels
-     * @param y the y location at which to start grabbing pixels
-     * @param w the width of the rectangle of pixels to grab
-     * @param h the height of the rectangle of pixels to grab
+     * @param img    the source image
+     * @param x      the x location at which to start grabbing pixels
+     * @param y      the y location at which to start grabbing pixels
+     * @param w      the width of the rectangle of pixels to grab
+     * @param h      the height of the rectangle of pixels to grab
      * @param pixels a pre-allocated array of pixels of size w*h; can be null
      * @return <code>pixels</code> if non-null, a new array of integers
-     *   otherwise
+     * otherwise
      * @throws IllegalArgumentException is <code>pixels</code> is non-null and
-     *   of length &lt; w*h
+     *                                  of length &lt; w*h
      */
     public static int[] getPixels( final BufferedImage img,
                                    final int x, final int y, final int w, final int h, int[] pixels ) {
@@ -603,14 +604,14 @@ public final class ImageUtils {
      * an image of type different from <code>BufferedImage.TYPE_INT_ARGB</code>
      * and <code>BufferedImage.TYPE_INT_RGB</code> will unmanage the image.</p>
      *
-     * @param img the destination image
-     * @param x the x location at which to start storing pixels
-     * @param y the y location at which to start storing pixels
-     * @param w the width of the rectangle of pixels to store
-     * @param h the height of the rectangle of pixels to store
+     * @param img    the destination image
+     * @param x      the x location at which to start storing pixels
+     * @param y      the y location at which to start storing pixels
+     * @param w      the width of the rectangle of pixels to store
+     * @param h      the height of the rectangle of pixels to store
      * @param pixels an array of pixels, stored as integers
      * @throws IllegalArgumentException is <code>pixels</code> is non-null and
-     *   of length &lt; w*h
+     *                                  of length &lt; w*h
      */
     public static void setPixels( final BufferedImage img,
                                   final int x, final int y, final int w, final int h, final int[] pixels ) {

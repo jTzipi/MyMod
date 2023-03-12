@@ -37,19 +37,20 @@ import java.util.stream.Collectors;
 /**
  * Regular Path Node.
  * <p>
- *  This is a wrapper for a 'regular' path.
- *  in the file system.
- *  <br/>
+ * This is a wrapper for a 'regular' path.
+ * in the file system.
+ * <br/>
  *
  * </p>
+ *
  * @author jTzipi
  */
 public class RegularPathNode implements IPathNode {
 
-    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger( RegularPathNode.class);
+    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger( RegularPathNode.class );
 
     private static final Comparator<? super IPathNode> DEF_COMP = Comparator.comparing( IPathNode::isDir )
-            .thenComparing( (p1, p2) -> Collator.getInstance().compare( p1.getName(), p2.getName() ) )
+            .thenComparing( ( p1, p2 ) -> Collator.getInstance().compare( p1.getName(), p2.getName() ) )
             .thenComparing( IPathNode::isReadable )
             .reversed();
 
@@ -83,31 +84,11 @@ public class RegularPathNode implements IPathNode {
         this.path = value;
     }
 
-    @Override
-    public String toString() {
-
-        return "RegularPathNode{" +
-                "path=" + path +
-                ", parentNode=" + parentNode +
-                ", depth=" + depth +
-                ", name='" + name + '\'' +
-                ", desc='" + desc + '\'' +
-                ", type='" + type + '\'' +
-                ", dir=" + dir +
-                ", symLink=" + symLink +
-                ", hidden=" + hidden +
-                ", readable=" + readable +
-                ", created=" + created +
-                ", fileLen=" + fileLen +
-                ", ftCreate=" + ftCreate +
-                ", creationError=" + creationError +
-                '}';
-    }
-
     /**
      * Return a regular path node.
+     *
      * @param parentNode parent node or null if root
-     * @param path path
+     * @param path       path
      * @return RegularPathNode
      * @throws NullPointerException if {@code path} is null
      */
@@ -129,25 +110,26 @@ public class RegularPathNode implements IPathNode {
         return subPathL.stream()
                 .sorted()
                 .map( p -> RegularPathNode.of( parent, p ) )
-                .collect( Collectors.toList());
+                .collect( Collectors.toList() );
     }
 
-    private void init(  ) {
+    private void init() {
 
         this.name = PathInfo.fileSystemName( path );
         this.desc = PathInfo.fileSystemTypeDesc( path );
-        this.dir = PathInfo.isDir(path);
+        this.dir = PathInfo.isDir( path );
         this.type = ModIO.probePathTypeSafe( path );
         this.readable = PathInfo.isReadable( path );
         this.symLink = PathInfo.isLink( path );
         this.hidden = PathInfo.isHidden( path );
         this.depth = path.getNameCount();
-        this.fileLen =  PathInfo.getLength( path );
+        this.fileLen = PathInfo.getLength( path );
         this.ftCreate = ModIO.readFileCreationTimeSafe( path );
     }
 
     /**
      * Set node creator.
+     *
      * @param func function to create sub node
      */
     public void setSubNodeCreator( final BiFunction<Path, Predicate<? super Path>, List<Path>> func ) {
@@ -158,14 +140,13 @@ public class RegularPathNode implements IPathNode {
     /**
      * Set a custom comparator.
      * TODO good idea?
+     *
      * @param comparator custom comparator
      */
     public void setComparator( final Comparator<? super IPathNode> comparator ) {
 
         this.comp = comparator;
     }
-
-
 
     @Override
     public INode<Path> getParent() {
@@ -182,25 +163,25 @@ public class RegularPathNode implements IPathNode {
     @Override
     public List<INode<Path>> getSubNodes() {
 
-        return getSubNodes(PREDICATE_ACCEPT_PATH_ALL);
+        return getSubNodes( PREDICATE_ACCEPT_PATH_ALL );
     }
 
     @Override
     public List<INode<Path>> getSubNodes( Predicate<? super Path> predicate ) {
 // we want only dir to have sub nodes
-        if( !isDir() ) {
-            LOG.info( "Try to read sub nodes of non dir file[='"+path+"']" );
+        if ( !isDir() ) {
+            LOG.info( "Try to read sub nodes of non dir file[='" + path + "']" );
             return Collections.emptyList();
         }
 
         // Dir not readable -> return empty list
-        if( isDir() && !isReadable() ) {
+        if ( isDir() && !isReadable() ) {
             LOG.info( "This[=" + path + "'] dir is not readable!" );
             return Collections.emptyList();
         }
         // create them
         // if there is I/O error save
-        if( !isNodeSubListCreated() ) {
+        if ( !isNodeSubListCreated() ) {
             LOG.debug( "-- sub nodes not created : start creating now" );
             try {
                 this.subNodeL = createSub( path, predicate, this, createSubNodeF );
@@ -229,7 +210,7 @@ public class RegularPathNode implements IPathNode {
     @Override
     public boolean isLeaf() {
 
-        return (!isDir() && !isLink()) || !isReadable();
+        return ( !isDir() && !isLink() ) || !isReadable();
     }
 
     @Override
@@ -328,15 +309,35 @@ public class RegularPathNode implements IPathNode {
         if ( this == object ) {
             return true;
         }
-        if ( !( object instanceof IPathNode ) ) {
+        if ( !( object instanceof final IPathNode other ) ) {
             return false;
         }
 
-        final IPathNode other = ( IPathNode ) object;
         final Path thisPath = getValue();
         final Path otherPath = other.getValue();
 
 
         return thisPath.normalize().equals( otherPath.normalize() );
+    }
+
+    @Override
+    public String toString() {
+
+        return "RegularPathNode{" +
+                "path=" + path +
+                ", parentNode=" + parentNode +
+                ", depth=" + depth +
+                ", name='" + name + '\'' +
+                ", desc='" + desc + '\'' +
+                ", type='" + type + '\'' +
+                ", dir=" + dir +
+                ", symLink=" + symLink +
+                ", hidden=" + hidden +
+                ", readable=" + readable +
+                ", created=" + created +
+                ", fileLen=" + fileLen +
+                ", ftCreate=" + ftCreate +
+                ", creationError=" + creationError +
+                '}';
     }
 }

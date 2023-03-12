@@ -40,7 +40,6 @@ import java.util.function.Predicate;
  *     </ul>
  * </p>
  *
- *
  * @author jTzipi
  */
 public interface IPathNode extends INode<Path>, Comparable<IPathNode> {
@@ -53,7 +52,7 @@ public interface IPathNode extends INode<Path>, Comparable<IPathNode> {
     /**
      * Name of path.
      * <p>
-     *     That is the name of last path component.
+     * That is the name of last path component.
      * </p>
      *
      * @return name
@@ -63,6 +62,7 @@ public interface IPathNode extends INode<Path>, Comparable<IPathNode> {
     /**
      * Path description.
      * System dependent description of file.
+     *
      * @return description
      */
     String getDesc();
@@ -70,7 +70,7 @@ public interface IPathNode extends INode<Path>, Comparable<IPathNode> {
     /**
      * Path type.
      * <p>
-     *     For example 'Image/png'.
+     * For example 'Image/png'.
      * </p>
      *
      * @return type
@@ -79,30 +79,35 @@ public interface IPathNode extends INode<Path>, Comparable<IPathNode> {
 
     /**
      * Is the sub node list created.
+     *
      * @return {@code true} if node has created sub nodes
      */
     boolean isNodeSubListCreated();
 
     /**
      * Path is a link to another path.
+     *
      * @return is this path a link
      */
     boolean isLink();
 
     /**
      * Path is a directory.
+     *
      * @return is this path a directory
      */
     boolean isDir();
 
     /**
      * Path is readable by Java.
+     *
      * @return {@code true} if path is regular readable
      */
     boolean isReadable();
 
     /**
      * Path is hidden.
+     *
      * @return path is hidden
      */
     boolean isHidden();

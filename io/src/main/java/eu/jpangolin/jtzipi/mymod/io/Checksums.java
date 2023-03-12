@@ -73,15 +73,15 @@ public final class Checksums {
             throw new IllegalArgumentException( "Path '" + path + "' seem to be a dir" );
         }
 
-        if( Files.size( path ) == 0L ) {
-            throw new IllegalArgumentException("Path '" + path + "' size is 0!");
+        if ( Files.size( path ) == 0L ) {
+            throw new IllegalArgumentException( "Path '" + path + "' size is 0!" );
         }
     }
 
     private static int calcBuffer( int buffer, long fsize ) {
         assert fsize > 0L;
 
-        if( fsize >= LARGE_FILE && buffer < LARGE_BUF_SIZE ) {
+        if ( fsize >= LARGE_FILE && buffer < LARGE_BUF_SIZE ) {
             buffer = LARGE_BUF_SIZE;
             LOG.info( "Detect large file[={}] and small buffer[={}] Use Large Buffer", fsize, buffer );
         } else {
@@ -127,15 +127,17 @@ public final class Checksums {
         return calcHashStreaming( path, md, buffer );
     }
 
-    /**s
+    /**
+     * s
      * Calculate hash value for path using DigestInputStream.
-     * @param path path to file
-     * @param md message digest
+     *
+     * @param path    path to file
+     * @param md      message digest
      * @param bufSize buffer size [{@link #MIN_BUF_SIZE} .. ]
      * @return hash value
-     * @throws IOException i/o error or path is not readable
+     * @throws IOException              i/o error or path is not readable
      * @throws IllegalArgumentException if {@code path} is a dir
-     * @throws NullPointerException if {@code path} is
+     * @throws NullPointerException     if {@code path} is
      */
     public static String calcHashStreaming( final Path path, MessageDigest md, int bufSize ) throws IOException {
 
@@ -150,12 +152,12 @@ public final class Checksums {
         bufSize = calcBuffer( bufSize, Files.size( path ) );
 
         byte[] buffer = new byte[bufSize];
-        try( FileInputStream fis = new FileInputStream( path.toFile());
-             BufferedInputStream buf = new BufferedInputStream( fis );
-             DigestInputStream dis = new DigestInputStream( buf, md ) ) {
+        try ( FileInputStream fis = new FileInputStream( path.toFile() );
+              BufferedInputStream buf = new BufferedInputStream( fis );
+              DigestInputStream dis = new DigestInputStream( buf, md ) ) {
 
             // Feed data into digest stream
-            while(dis.read(buffer, 0, bufSize) >= 0 ) {
+            while ( dis.read( buffer, 0, bufSize ) >= 0 ) {
                 // nothing
             }
             byte[] digest = dis.getMessageDigest().digest();
@@ -175,7 +177,7 @@ public final class Checksums {
      *
      * @param path path to file
      * @return hash
-     * @throws IOException
+     * @throws IOException ioE error or path is not readable
      */
     public static String calcHashDefault( final Path path ) throws IOException {
 
@@ -188,7 +190,7 @@ public final class Checksums {
      * @param path path to file
      * @param md   md
      * @return hash value
-     * @throws IOException
+     * @throws IOException I/O error or path is not readable
      */
     public static String calcHashDefault( final Path path, MessageDigest md ) throws IOException {
 
@@ -198,17 +200,17 @@ public final class Checksums {
 
     /**
      * Try to compute hash value of a file.
-     * @param path path to file
-     * @param md message digest
+     *
+     * @param path    path to file
+     * @param md      message digest
      * @param bufSize buffer size [{@linkplain #MIN_BUF_SIZE} .. ]
      * @return hash value
-     * @throws IOException if {@code path} is not readable or i/o error
+     * @throws IOException              if {@code path} is not readable or i/o error
      * @throws IllegalArgumentException if {@code path} is a dir
-     * @throws NullPointerException if {@code path} is
-     *
+     * @throws NullPointerException     if {@code path} is
      */
     public static String calcHashDefault( final Path path, MessageDigest md, int bufSize ) throws IOException {
-    checkPath( path );
+        checkPath( path );
 
         bufSize = Math.max( MIN_BUF_SIZE, bufSize );
 // default digest
@@ -217,14 +219,14 @@ public final class Checksums {
             md = DEFAULT_DIGEST;
         }
 
-        LOG.info( "Calculate Hash using '{}' with buffer size {}" , md, bufSize );
+        LOG.info( "Calculate Hash using '{}' with buffer size {}", md, bufSize );
         // arm
-        try( FileInputStream fis = new FileInputStream( path.toFile() );
-             BufferedInputStream buf = new BufferedInputStream( fis )) {
-int read;
+        try ( FileInputStream fis = new FileInputStream( path.toFile() );
+              BufferedInputStream buf = new BufferedInputStream( fis ) ) {
+            int read;
             byte[] buffer = new byte[bufSize];
-            while((read = buf.read(buffer) )> 0) {
-                md.update(buffer,0,read);
+            while ( ( read = buf.read( buffer ) ) > 0 ) {
+                md.update( buffer, 0, read );
             }
 
             byte[] hash = md.digest();

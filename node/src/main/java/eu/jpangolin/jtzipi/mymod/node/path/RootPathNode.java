@@ -45,7 +45,7 @@ import java.util.stream.Stream;
  *
  * @author jTzipi
  */
-public final class RootPathNode implements IPathNode{
+public final class RootPathNode implements IPathNode {
 
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger( RootPathNode.class );
@@ -56,8 +56,8 @@ public final class RootPathNode implements IPathNode{
     private IOException creationError;
 
 
-    private RootPathNode(OS os) {
-this.os = os;
+    private RootPathNode( OS os ) {
+        this.os = os;
     }
 
     /**
@@ -82,11 +82,11 @@ this.os = os;
 
         Objects.requireNonNull( os );
         RootPathNode rpt = new RootPathNode( os );
-        rpt.init(  );
+        rpt.init();
         return rpt;
     }
 
-    private void init(  ) {
+    private void init() {
 
         switch ( os ) {
             case WINDOWS:
@@ -159,7 +159,7 @@ this.os = os;
 
         File[] roots = File.listRoots();
 
-        appendNodes( Stream.of(roots).map( File::toPath ).collect( Collectors.toList()) );
+        appendNodes( Stream.of( roots ).map( File::toPath ).collect( Collectors.toList() ) );
 
     }
 
@@ -172,7 +172,7 @@ this.os = os;
 
     private void appendNodes( Iterable<Path> path ) {
 
-        for( Path rootSubPath : path ) {
+        for ( Path rootSubPath : path ) {
             subNodeL.add( RegularPathNode.of( this, rootSubPath ) );
         }
 // set home dir of user
@@ -181,11 +181,13 @@ this.os = os;
 
     /**
      * Return wrapped os.
+     *
      * @return os
      */
     public OS getOs() {
         return os;
     }
+
     @Override
     public INode<Path> getParent() {
 
@@ -201,13 +203,13 @@ this.os = os;
     @Override
     public List<INode<Path>> getSubNodes() {
 
-        return getSubNodes(IPathNode.PREDICATE_ACCEPT_PATH_ALL);
+        return getSubNodes( IPathNode.PREDICATE_ACCEPT_PATH_ALL );
     }
 
     @Override
     public List<INode<Path>> getSubNodes( Predicate<? super Path> predicate ) {
 
-        if( null == predicate || predicate.equals( PREDICATE_ACCEPT_PATH_ALL ) ) {
+        if ( null == predicate || predicate.equals( PREDICATE_ACCEPT_PATH_ALL ) ) {
             return Collections.unmodifiableList( subNodeL );
         }
         return subNodeL.stream()
@@ -232,6 +234,17 @@ this.os = os;
     public int hashCode() {
 
         return Objects.hash( os );
+    }
+
+    @Override
+    public String toString() {
+
+        return "RootPathNode{" +
+                "subNodeL={" + subNodeL
+                + "}, readable='" + isReadable()
+                + "', hidden='" + isHidden()
+                + "', depth='" + getDepth()
+                + '}';
     }
 
     @Override
@@ -289,17 +302,6 @@ this.os = os;
     }
 
     @Override
-    public String toString() {
-
-        return "RootPathNode{" +
-                "subNodeL={" + subNodeL
-                + "}, readable='" + isReadable()
-                + "', hidden='" + isHidden()
-                + "', depth='" + getDepth()
-                +'}';
-    }
-
-    @Override
     public long getFileLength() {
 
         return ModIO.PATH_DIR_LENGTH;
@@ -309,7 +311,7 @@ this.os = os;
     public void requestReload() {
 
         this.subNodeL.clear();
-        init(  );
+        init();
     }
 
     @Override

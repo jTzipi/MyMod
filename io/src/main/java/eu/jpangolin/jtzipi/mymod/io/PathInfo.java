@@ -28,7 +28,6 @@ import java.util.Objects;
  * Therefor we do <u>not</u> use the java.nio.path API but the older
  * {@link FileSystemView} API and the {@link File} API.
  * <p>
- *
  */
 public final class PathInfo {
 
@@ -59,8 +58,7 @@ public final class PathInfo {
      * Return whether {@code path} is a real file or directory.
      *
      * @param path path
-     * @return
-     * {@code true} if {@code path} is a real file or directory
+     * @return {@code true} if {@code path} is a real file or directory
      */
     public static boolean isRegular( final Path path ) {
 
@@ -81,8 +79,6 @@ public final class PathInfo {
 
         return file.exists() && file.canRead();
     }
-
-
 
 
     public static boolean isWritable( final Path path ) {

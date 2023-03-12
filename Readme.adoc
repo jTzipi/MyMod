@@ -1,0 +1,10 @@
+= MyMod
+Tim Langhammer <tlhammer@mailbox.org>
+:description: Intro to MyMod API
+:github: https://github.com/jTzipi/MyMod
+
+== Intro
+
+This is a useful set of modules, containing code used in
+my other projects.
+

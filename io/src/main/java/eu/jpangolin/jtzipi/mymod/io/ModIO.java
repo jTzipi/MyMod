@@ -89,20 +89,21 @@ public final class ModIO {
 
     /**
      * Read  resource bundle.
-     * @param cls class from which location the resource loaded
+     *
+     * @param cls             class from which location the resource loaded
      * @param resourceFileStr name of resource
      * @return resource bundle
-     * @throws IOException if ioe
-     * @throws NullPointerException if {@code cls}|{@code resourceFileStr} is null
+     * @throws IOException           if ioe
+     * @throws NullPointerException  if {@code cls}|{@code resourceFileStr} is null
      * @throws IllegalStateException if resource is not readable
      */
     public static ResourceBundle loadResourceBundle( final Class<?> cls, final String resourceFileStr ) throws IOException {
         Objects.requireNonNull( cls );
 
         ResourceBundle resBu;
-        try( final InputStream resIS = cls.getResourceAsStream(  resourceFileStr ) ) {
-            if( null == resIS ) {
-                throw new IllegalStateException("ResourceBundle[='"+ resourceFileStr +"'] not readable");
+        try ( final InputStream resIS = cls.getResourceAsStream( resourceFileStr ) ) {
+            if ( null == resIS ) {
+                throw new IllegalStateException( "ResourceBundle[='" + resourceFileStr + "'] not readable" );
             }
             resBu = new PropertyResourceBundle( resIS );
 
@@ -110,34 +111,33 @@ public final class ModIO {
         return resBu;
     }
 
-
     /**
      * Try to load all sub path's of path p.
      *
      * @param p path to lookup
      * @return list of path's or empty list if not readable or no dir
-     * @throws IOException if I/O
+     * @throws IOException          if I/O
      * @throws NullPointerException if {@code p} is null
      * @see #lookupDir(Path, Predicate, boolean)
      */
-    public static List<Path> lookupDir(   Path p ) throws IOException {
+    public static List<Path> lookupDir( Path p ) throws IOException {
 
         return lookupDir( p, null, false );
     }
 
     /**
      * Try to load all sub path's of path p.
-     * @param p path
+     *
+     * @param p  path
      * @param pp predicate
      * @return list of sub path
-     * @throws IOException ifs
+     * @throws IOException          ifs
      * @throws NullPointerException if {@code p} is null
      */
     public static List<Path> lookupDir( Path p, Predicate<? super Path> pp ) throws IOException {
 
         return lookupDir( p, pp, false );
     }
-
 
 
     /**
@@ -150,13 +150,14 @@ public final class ModIO {
      * <p>
      * In case of a <u>symbolic link</u> with the {@code followLink} option set
      * we try to follow the symlink and return this path's files.
+     *
      * @param p             path to lookup
      * @param pathPredicate filter
      * @return list of path
      * @throws NullPointerException {@code p} is {@code null}
      * @see #lookupDir(Path)
      */
-    public static List<Path> lookupDir(   Path p, final Predicate<? super Path> pathPredicate, boolean followLink ) throws IOException {
+    public static List<Path> lookupDir( Path p, final Predicate<? super Path> pathPredicate, boolean followLink ) throws IOException {
 
         Objects.requireNonNull( p );
 
@@ -165,7 +166,7 @@ public final class ModIO {
             return Collections.emptyList();
         }
         if ( !Files.isDirectory( p ) ) {
-            LOG.info( "Try to read sub path of non directory[='"+p+"']" );
+            LOG.info( "Try to read sub path of non directory[='" + p + "']" );
             return Collections.emptyList();
         }
 
@@ -174,7 +175,7 @@ public final class ModIO {
                 : pathPredicate::test;
 
         // if follow symlink we try to follow
-        if( followLink && Files.isSymbolicLink( p ) ) {
+        if ( followLink && Files.isSymbolicLink( p ) ) {
             p = Files.readSymbolicLink( p );
         }
 
@@ -541,18 +542,19 @@ public final class ModIO {
 
     /**
      * Read a '.properties'-file as a resource located file.
-     * @param cls cls
+     *
+     * @param cls     cls
      * @param fileStr file name
      * @return properties
-     * @throws IOException if file not readable
+     * @throws IOException           if file not readable
      * @throws IllegalStateException if stream is null
-     * @throws NullPointerException if {@code cls}|{@code fileStr} is null
+     * @throws NullPointerException  if {@code cls}|{@code fileStr} is null
      */
-    public static Properties loadPropertiesFromResource( Class<?> cls , String fileStr) throws IOException {
-        Objects.requireNonNull(cls);
+    public static Properties loadPropertiesFromResource( Class<?> cls, String fileStr ) throws IOException {
+        Objects.requireNonNull( cls );
         Objects.requireNonNull( fileStr );
         Properties prop = new Properties();
-        LOG.info( "try to load '" + fileStr + "' from '" + cls.getSimpleName()+ "'" );
+        LOG.info( "try to load '" + fileStr + "' from '" + cls.getSimpleName() + "'" );
         try ( InputStream is = cls.getResourceAsStream( fileStr ) ) {
 
             if ( null == is ) {
@@ -568,28 +570,29 @@ public final class ModIO {
 
     /**
      * Load a resource.
-     * @param cls cls to load from
-     * @param fileStr file name
+     *
+     * @param cls           cls to load from
+     * @param fileStr       file name
      * @param appendNewLine append new line ({@literal \n}
      * @return String Builder with file content
-     * @throws IOException fail to load
+     * @throws IOException          fail to load
      * @throws NullPointerException if {@code cls}|{@code fileStr}
      */
-    public static StringBuilder loadResource( final Class<?>cls, String fileStr, boolean appendNewLine ) throws IOException {
+    public static StringBuilder loadResource( final Class<?> cls, String fileStr, boolean appendNewLine ) throws IOException {
         Objects.requireNonNull( cls, "class is null" );
         Objects.requireNonNull( fileStr, "File is null!" );
         StringBuilder sb = new StringBuilder();
 
-        try(InputStream resIs = cls.getResourceAsStream( fileStr )){
-            if( null == resIs) {
-                throw new IOException("InputStream for resource '"+fileStr+"' can not created!Was null!");
+        try ( InputStream resIs = cls.getResourceAsStream( fileStr ) ) {
+            if ( null == resIs ) {
+                throw new IOException( "InputStream for resource '" + fileStr + "' can not created!Was null!" );
             }
 
             Scanner scan = new Scanner( resIs );
-            while ( scan.hasNextLine() ){
+            while ( scan.hasNextLine() ) {
                 sb.append( scan.nextLine() );
-                if( appendNewLine ){
-                    sb.append('\n');
+                if ( appendNewLine ) {
+                    sb.append( '\n' );
 
                 }
             }
@@ -597,11 +600,13 @@ public final class ModIO {
 
         return sb;
     }
+
     /**
      * Write global JaMeLime properties file.
-     * @param prop properties
+     *
+     * @param prop    properties
      * @param comment comment (optional)
-     * @throws IOException io
+     * @throws IOException          io
      * @throws NullPointerException if {@code prop} is null
      */
     public static void writePropertiesToPath( Path path, Properties prop, String comment ) throws IOException {
@@ -609,11 +614,11 @@ public final class ModIO {
         ;
         Objects.requireNonNull( prop );
 
-        if( null == comment ) {
-            comment ="<?>";
+        if ( null == comment ) {
+            comment = "<?>";
         }
 
-        try( BufferedWriter bw = Files.newBufferedWriter( path ) ) {
+        try ( BufferedWriter bw = Files.newBufferedWriter( path ) ) {
             prop.store( bw, comment );
         }
 
@@ -639,9 +644,10 @@ public final class ModIO {
 
     /**
      * Try to read file creation time.
+     *
      * @param path path
      * @return file creation time or {@linkplain #FILE_TIME_NA}
-     *@throws NullPointerException if {@code path} is null
+     * @throws NullPointerException if {@code path} is null
      */
     public static FileTime readFileCreationTimeSafe( final Path path ) {
 

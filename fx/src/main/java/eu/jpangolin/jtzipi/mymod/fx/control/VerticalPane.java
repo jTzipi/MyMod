@@ -11,7 +11,7 @@ import java.util.Objects;
 
 /**
  * A Pane which align it's nodes vertical rotated.
- *
+ * <p>
  * TODO: VBox?
  */
 public class VerticalPane extends Pane {
@@ -135,6 +135,7 @@ public class VerticalPane extends Pane {
 
         label.relocate( x, y );
     }
+
     private void relayoutAll() {
 
 

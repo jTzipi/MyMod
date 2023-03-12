@@ -32,13 +32,14 @@ public class HashFileTask extends Task<String> {
 
     /**
      * Return hash file task.
-     * @param path path to file
-     * @param md digest
+     *
+     * @param path         path to file
+     * @param md           digest
      * @param hashCalcType type of hash method
-     * @param bufSize buffer
+     * @param bufSize      buffer
      * @return task
      * @throws NullPointerException if {@code path}
-     * @throws IOException if {@code path} is not readable
+     * @throws IOException          if {@code path} is not readable
      */
     public static HashFileTask of( Path path, MessageDigest md, HashCalcType hashCalcType, int bufSize ) throws IOException {
 

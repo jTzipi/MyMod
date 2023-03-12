@@ -26,36 +26,16 @@ package eu.jpangolin.jtzipi.mymod.io.image;
  *
  * @author jTzipi
  */
-public final class ImageDimension implements Comparable<ImageDimension> {
+public record ImageDimension(int width, int height) implements Comparable<ImageDimension> {
 
     /**
      * Empty Dimension that is a dimension with no length.
      * <p>
-     *     Width and Height are -1.
+     * Width and Height are -1.
      * </p>
      */
-    public static final ImageDimension EMPTY = new ImageDimension();
+    public static final ImageDimension EMPTY = new ImageDimension( -1, -1 );
 
-    private final int width;
-    private final int height;
-
-    /**
-     * Image dimension.
-     *
-     * @param imageWidth width of image
-     * @param imageHeight height of image
-     */
-    ImageDimension( final int imageWidth, final int imageHeight ) {
-        this.width = imageWidth;
-        this.height = imageHeight;
-    }
-
-    /**
-     * No Access.
-     */
-    private ImageDimension() {
-this(-1, -1 );
-    }
 
     /**
      * Build new instance.
@@ -73,55 +53,16 @@ this(-1, -1 );
         return new ImageDimension( width, height );
     }
 
-    /**
-     * Width of image.
-     * @return image width
-     */
-    public int getWidth() {
-        return this.width;
-    }
-
-    /**
-     * Height of image.
-     * @return image height
-     */
-    public int getHeight() {
-        return this.height;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = getWidth();
-        result = 31 * result + getHeight();
-        return result;
-    }
-
-    @Override
-    public boolean equals( final Object other ) {
-        if ( other == this ) {
-            return true;
-        }
-        if ( !( other instanceof ImageDimension ) ) {
-            return false;
-        }
-        final ImageDimension idim = ( ImageDimension ) other;
-        return getWidth() == idim.getWidth() &&
-                getHeight() == idim.getHeight();
-    }
-
-    @Override
-    public String toString() {
-        return "ImageDimension{" +
-                "width=" + width +
-                ", height=" + height +
-                '}';
-    }
 
     @Override
     public int compareTo( final ImageDimension imageDimension ) {
 
-        final int area = this.getHeight() * this.getWidth();
-        final int other = imageDimension.getHeight() * imageDimension.getWidth();
-        return Integer.compare( area, other );
+        final int area = height * width;
+        final int other = imageDimension.width * imageDimension.height;
+        return EMPTY == this
+                ? -1
+                : EMPTY == imageDimension
+                ? 1
+                : Integer.compare( area, other );
     }
 }

@@ -11,8 +11,8 @@ import java.util.regex.Pattern;
 /**
  * Sprites.
  * <p>
- *     Here we can obtain svg 'sprites' from some providers like
- *     <a href="https://fontawesome.com" alt="Font Awesome" >Font Awesome</a>.
+ * Here we can obtain svg 'sprites' from some providers like
+ * <a href="https://fontawesome.com" alt="Font Awesome" >Font Awesome</a>.
  * </p>
  */
 public final class Sprites {
@@ -27,6 +27,37 @@ public final class Sprites {
 
 
     private Sprites() {
+
+    }
+
+    private static void parseSpriteLib( SpritesProvider sp ) throws IOException {
+        LOG.info( "Load SVG Sprites for " + sp + "" );
+        assert null != sp : "SpriteProvider must != null";
+
+        // load file name
+        String fileName = SVG_PROP.getProperty( sp.getFileName() );
+        String regPath = SVG_PROP.getProperty( sp.getRegPath() );
+
+        if ( null == fileName || null == regPath ) {
+            throw new IllegalStateException( "Filename[=" + fileName + "] or PathReg[='" + regPath + "'] not found!" );
+        }
+        String svgContent = ModIO.loadResource( Sprites.class, fileName, true ).toString();
+
+        // pattern matcher
+        Pattern regIdAndPath = Pattern.compile( regPath );
+        Matcher matcher = regIdAndPath.matcher( svgContent );
+
+        Map<String, String> spriteMap = new HashMap<>();
+
+        while ( matcher.find() ) {
+
+            String id = matcher.group( SpritesProvider.ID_PLACEHOLDER );
+            String path = matcher.group( SpritesProvider.PATH_PLACEHOLDER );
+
+            spriteMap.put( id, path );
+
+        }
+        SPRITE_LIB_MAP.put( sp, spriteMap );
 
     }
 
@@ -51,37 +82,6 @@ public final class Sprites {
         }
 
         return SPRITE_LIB_MAP.get( sp ).getOrDefault( idStr, OwnSprites.SPRITE_NOT_FOUND.get() );
-    }
-
-    private static void parseSpriteLib( SpritesProvider sp ) throws IOException {
-        LOG.info( "Load SVG Sprites for " + sp + "" );
-        assert null != sp : "SpriteProvider must != null";
-
-        // load file name
-        String fileName = SVG_PROP.getProperty( sp.getFileName() );
-        String regPath = SVG_PROP.getProperty( sp.getRegPath() );
-
-        if ( null == fileName || null == regPath ) {
-            throw new IllegalStateException( "Filename[="+fileName+"] or PathReg[='"+regPath+"'] not found!" );
-        }
-        String svgContent = ModIO.loadResource( Sprites.class, fileName, true ).toString();
-
-        // pattern matcher
-        Pattern regIdAndPath = Pattern.compile( regPath );
-        Matcher matcher = regIdAndPath.matcher( svgContent );
-
-        Map<String, String> spriteMap = new HashMap<>();
-
-        while ( matcher.find() ) {
-
-            String id = matcher.group( SpritesProvider.ID_PLACEHOLDER );
-            String path = matcher.group( SpritesProvider.PATH_PLACEHOLDER );
-
-            spriteMap.put( id, path );
-
-        }
-        SPRITE_LIB_MAP.put( sp, spriteMap );
-
     }
 
 

@@ -39,11 +39,12 @@ public final class ModUtils {
 
     /**
      * Clamp a value to [{@code min} .. {@code max}].
+     *
      * @param val value
      * @param min minimal
      * @param max maximal
-     * @return value clamped
      * @param <T> subtype of comparable
+     * @return value clamped
      */
     public static <T extends Comparable<? super T>> T clamp( T val, T min, T max ) {
 
@@ -67,23 +68,25 @@ public final class ModUtils {
 
     /**
      * Round a double value to 'nc' positions rounding half up.
+     *
      * @param value value
-     * @param nc position
+     * @param nc    position
      * @return rounded value
      */
     public static double round( double value, int nc ) {
-return round( value, nc, RoundingMode.HALF_UP );
+        return round( value, nc, RoundingMode.HALF_UP );
     }
 
     /**
      * Round a double to value to 'nc' positions.
+     *
      * @param value value
-     * @param nc position after .
+     * @param nc    position after .
      * @param rmode rounding mode if
      * @return rounded value
      */
     public static double round( double value, int nc, RoundingMode rmode ) {
-        if( null == rmode ) {
+        if ( null == rmode ) {
             rmode = RoundingMode.HALF_UP;
         }
         nc = Math.max( 0, nc );
@@ -97,11 +100,11 @@ return round( value, nc, RoundingMode.HALF_UP );
      */
     public static void registerBouncyCastleProvider() {
 
-         int pp = Security.addProvider( new BouncyCastleProvider() );
-         LOG.info( "Added BC Provider on position {}",pp );
-         if( -1 == pp ) {
-             LOG.warn( "BC Provider already installed" );
-         }
+        int pp = Security.addProvider( new BouncyCastleProvider() );
+        LOG.info( "Added BC Provider on position {}", pp );
+        if ( -1 == pp ) {
+            LOG.warn( "BC Provider already installed" );
+        }
     }
 
     /**
@@ -111,11 +114,12 @@ return round( value, nc, RoundingMode.HALF_UP );
      * If the Throwable is an Error, throw it; if it is a
      * RuntimeException return it, otherwise throw IllegalStateException.
      * <p>
-     * Author: Brian Goetz
+     *
      * @param t launderThrowable
      * @return exception
      * @throws IllegalStateException if {@code t} is not of type {@link RuntimeException} or {@link Error}
-     * @throws NullPointerException if {@code t} is null
+     * @throws NullPointerException  if {@code t} is null
+     * @author: Brian Goetz
      */
     public static RuntimeException launderThrowable( Throwable t ) {
 

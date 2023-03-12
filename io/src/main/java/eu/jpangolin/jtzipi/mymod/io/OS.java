@@ -55,6 +55,7 @@ public enum OS {
     OTHER( null );
 
     private static final Properties SYS_PROP = System.getProperties();
+    private static final Map<String, String> SYS_ENV = System.getenv();
     // root path
     private final String path;
 
@@ -108,6 +109,7 @@ public enum OS {
 
     /**
      * Return home dir of user.
+     *
      * @return user home or '.' if failed to read
      */
     public static Path getHomeDir() {
@@ -117,15 +119,17 @@ public enum OS {
 
     /**
      * Return user dir.
+     *
      * @return user dir or '.' if failed to read
      */
     public static Path getUserDir() {
 
-        return Paths.get(SYS_PROP.getProperty( "user.dir" , "." ));
+        return Paths.get( SYS_PROP.getProperty( "user.dir", "." ) );
     }
 
     /**
      * Return username.
+     *
      * @return username
      */
     public static String getUser() {
@@ -133,9 +137,13 @@ public enum OS {
         return SYS_PROP.getProperty( "user.name", ModIO.NA );
     }
 
-    private static Map<String, String> readSysProp() {
-
-        return System.getenv();
+    /**
+     * Return system environment properties.
+     *
+     * @return map system env
+     */
+    public static Map<String, String> readSysProp() {
+        return SYS_ENV;
     }
 
     /**

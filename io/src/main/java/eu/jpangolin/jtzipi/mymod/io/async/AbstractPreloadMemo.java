@@ -20,27 +20,32 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.*;
 
 /**
  * Abstract Implementation of PreloaderMemoizer.
  * <p>
- *     Here we use a {@linkplain ConcurrentMap} to cache the argument.
- *     <br/>
- *     <br/>
- *     To launch threads we use a ExecutorService.
- *     This can be client provided.
- *     Default is {@linkplain Executors#newCachedThreadPool()}
- *     To stop running threads we have two methods.
- *     <br/>
- *     One with timeout ({@linkplain AbstractPreloadMemo#stop(TimeUnit, long)}
- *     One stops immediately ({@linkplain AbstractPreloadMemo#stopNow()} )
- *     <br/>
- *     The {@code launderThrowable} method is part of the {@code utils} package.
+ * Here we use a {@linkplain ConcurrentMap} to cache the argument.
+ * <br/>
+ * <br/>
+ * To launch threads we use a ExecutorService.
+ * This can be client provided.
+ * Default is {@linkplain Executors#newCachedThreadPool()}
+ * To stop running threads we have two methods.
+ * <br/>
+ * One with timeout ({@linkplain AbstractPreloadMemo#stop(TimeUnit, long)}
+ * One stops immediately ({@linkplain AbstractPreloadMemo#stopNow()} )
+ * <br/>
+ * The {@code launderThrowable} method is part of the {@code utils} package.
  *
  * </p>
  * <p>
- * We use an {@link ExecutorService} to run the
+ * We use an {@link ExecutorService} to run the computation.
+ * <br/>
+ * This was inspired by the great book "Java Concurrency in practice".
+ * See page 97 for 'preloader' and page 108 for 'memoizer'.
+ * For more code see <a href="https://jcip.net/" alt="JCIP homepage">here</a>.
  * </p>
  *
  * @param <K> key
@@ -49,7 +54,7 @@ import java.util.concurrent.*;
  */
 public abstract class AbstractPreloadMemo<K, V> implements IPreloadMemoized<K, V> {
 
-    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger( AbstractPreloadMemo.class );
+    static final org.slf4j.Logger LOG = LoggerFactory.getLogger( AbstractPreloadMemo.class );
 
     // ExecutorService
     private final ExecutorService exeSe;
@@ -58,6 +63,7 @@ public abstract class AbstractPreloadMemo<K, V> implements IPreloadMemoized<K, V
 
     /**
      * Constructor.
+     *
      * @param executorService exec service
      */
     public AbstractPreloadMemo( ExecutorService executorService ) {
@@ -69,7 +75,7 @@ public abstract class AbstractPreloadMemo<K, V> implements IPreloadMemoized<K, V
      * Default constructor.
      */
     public AbstractPreloadMemo() {
-        this(Executors.newCachedThreadPool());
+        this( Executors.newCachedThreadPool() );
     }
 
 
@@ -79,27 +85,20 @@ public abstract class AbstractPreloadMemo<K, V> implements IPreloadMemoized<K, V
      * @param arg argument
      * @return value
      */
-     protected abstract V compute( final K arg );
-
-    /**
-     * Things made before start of computation.
-     * Optional.
-     * @param arg argument
-     */
-     protected void preStart(K arg) {}
+    protected abstract V compute( final K arg );
 
 
     /**
      * Try to finish all running tasks and shutdown.
      *
      * @param timeoutUn time unit
-     * @param time time
+     * @param time      time
      * @return {@code true} if executor shut down
      * @throws InterruptedException if await
      */
-    public boolean stop( TimeUnit timeoutUn, long time) throws InterruptedException {
+    public boolean stop( TimeUnit timeoutUn, long time ) throws InterruptedException {
 
-        if( null == timeoutUn ) {
+        if ( null == timeoutUn ) {
             timeoutUn = TimeUnit.SECONDS;
         }
         time = Math.max( 0L, time );
@@ -133,10 +132,15 @@ public abstract class AbstractPreloadMemo<K, V> implements IPreloadMemoized<K, V
         // cMap.computeIfAbsent( arg, key -> exeSe.submit( () -> compute( arg ) ) );
 
         Future<V> f = cMap.get( arg );
-        if( null == f) {
-            preStart( arg );
+        if ( null == f ) {
+
             LOG.info( "Start computation for key '{}'", arg );
-            cMap.putIfAbsent( arg, exeSe.submit( () -> compute( arg ) ) );
+            Future<V> old = cMap.putIfAbsent( arg, exeSe.submit( () -> compute( arg ) ) );
+            if ( null == old ) {
+                LOG.info( "Started computation!" );
+            } else {
+                LOG.info( "Other thread already started this" );
+            }
         } else {
             LOG.warn( "Try to start computation for already known key '{}'", arg );
         }
@@ -162,8 +166,8 @@ public abstract class AbstractPreloadMemo<K, V> implements IPreloadMemoized<K, V
 
 
         Future<V> f = cMap.get( arg );
-        if( null == f) {
-            preStart( arg );
+        if ( null == f ) {
+
 
             f = cMap.computeIfAbsent( arg, key -> exeSe.submit( () -> compute( arg ) ) );
 
@@ -186,6 +190,13 @@ public abstract class AbstractPreloadMemo<K, V> implements IPreloadMemoized<K, V
             throw new IllegalArgumentException( "No value for key[='" + arg + "']!" );
         }
         return cMap.remove( arg );
+    }
+
+    @Override
+    public boolean remove( K key, Future<V> val ) {
+        Objects.requireNonNull( key, "key must be non null" );
+        Objects.requireNonNull( val, "value must be non null" );
+        return cMap.remove( key, val );
     }
 
     @Override

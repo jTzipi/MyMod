@@ -3,12 +3,23 @@ package eu.jpangolin.jtzipi.mymod.io.async;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 
+/**
+ * Preloader and Memoizer for a task.
+ * This is similar to {@linkplain AbstractPreloadMemo}.
+ * The only difference here is that we provide the task to preload via
+ * the constructor as a {@linkplain Function}.
+ * So this class is no more {@code abstract}.
+ *
+ * @param <K> key
+ * @param <V> value
+ */
 public class PreloadMemoizer<K, V> implements IPreloadMemoized<K, V> {
 
 
@@ -70,6 +81,13 @@ public class PreloadMemoizer<K, V> implements IPreloadMemoized<K, V> {
     public Future<V> remove( K key ) {
 
         return null;
+    }
+
+    @Override
+    public boolean remove( K key, Future<V> future ) {
+        Objects.requireNonNull( key, "key must be non null" );
+        Objects.requireNonNull( future, "value must be non null" );
+        return cMap.remove( key, future );
     }
 
     @Override
