@@ -45,18 +45,17 @@ public class ToggleLabel extends Label {
     private final Color colorToggle = Color.rgb( 157, 157, 254 );
     private final Color colorHover = Color.rgb( 197, 197, 254 );
     private final Background origBG;
-    private final Border origBorder;
-    private final Border roundedBorder = new Border( new BorderStroke( colorHover, BorderStrokeStyle.SOLID, CORNER_RADII_DEF, BorderStroke.THIN ) );
+
+
+    private final Background toggleBG = new Background( new BackgroundFill( colorToggle, CornerRadii.EMPTY, Insets.EMPTY ) );
+    private final Background hoverBG = new Background( new BackgroundFill( colorHover, CornerRadii.EMPTY, Insets.EMPTY ) );
     /**
      * Background Hover property. Lazy init.
      */
-    private ObjectProperty<Background> fxBackgrndHoverProp;
-    private Background hoverBG = new Background( new BackgroundFill( colorHover, CornerRadii.EMPTY, Insets.EMPTY ) );
+    private ObjectProperty<Background> fxBGHoverProp;
+    private ObjectProperty<Background> fxBackgroundToggledProp;
     private ObjectProperty<Border> fxBorderHoverProp;
     private ObjectProperty<Border> fxBorderToggledProp;
-
-    private ObjectProperty<Background> fxBackgroundToggledProp;
-    private Background toggleBG = new Background( new BackgroundFill( colorToggle, CornerRadii.EMPTY, Insets.EMPTY ) );
 
     private Effect toggleEffect;
 
@@ -74,14 +73,14 @@ public class ToggleLabel extends Label {
     /**
      * Toggle Label C.
      *
-     * @param textStr
-     * @param graphics
+     * @param textStr text
+     * @param graphics graphics
      */
     public ToggleLabel( String textStr, Node graphics ) {
 
         super( textStr, graphics );
         this.origBG = getBackground();
-        this.origBorder = getBorder();
+
         this.setTextAlignment( TextAlignment.CENTER );
         this.setAlignment( Pos.CENTER );
         // setBorder( roundedBorder );
@@ -126,10 +125,10 @@ public class ToggleLabel extends Label {
      */
     public final ObjectProperty<Background> getFXBackgroundHoverProp() {
 
-        if ( null == fxBackgrndHoverProp ) {
-            this.fxBackgrndHoverProp = new SimpleObjectProperty<>( this, "FX_BACKGROUND_PROP", Background.EMPTY );
+        if ( null == fxBGHoverProp ) {
+            this.fxBGHoverProp = new SimpleObjectProperty<>( this, "FX_BACKGROUND_PROP", Background.EMPTY );
         }
-        return this.fxBackgrndHoverProp;
+        return this.fxBGHoverProp;
     }
 
     /**
@@ -140,7 +139,7 @@ public class ToggleLabel extends Label {
      */
     public final Background getBackgroundHover() {
 
-        return null == fxBackgrndHoverProp ?
+        return null == fxBGHoverProp ?
                 Background.EMPTY : getFXBackgroundHoverProp().getValue();
     }
 

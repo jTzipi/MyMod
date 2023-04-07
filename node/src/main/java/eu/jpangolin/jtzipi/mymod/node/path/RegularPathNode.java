@@ -49,15 +49,10 @@ public class RegularPathNode implements IPathNode {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger( RegularPathNode.class );
 
-    private static final Comparator<? super IPathNode> DEF_COMP = Comparator.comparing( IPathNode::isDir )
-            .thenComparing( ( p1, p2 ) -> Collator.getInstance().compare( p1.getName(), p2.getName() ) )
-            .thenComparing( IPathNode::isReadable )
-            .reversed();
-
     // -- INode prop --
     private final Path path;
     private final IPathNode parentNode;
-    private List<INode<Path>> subNodeL;
+     List<INode<Path>> subNodeL;
     private int depth;
     // -- IPathNode prop
     private String name;
@@ -67,18 +62,18 @@ public class RegularPathNode implements IPathNode {
     private boolean symLink;
     private boolean hidden;
     private boolean readable;
-    private boolean created;
+     boolean created;
     private long fileLen;
     private FileTime ftCreate;
 
 
     // -- RegularPathNode prop
-    private BiFunction<Path, Predicate<? super Path>, List<Path>> createSubNodeF;
-    private Comparator<? super IPathNode> comp;
-    private IOException creationError;
+    BiFunction<Path, Predicate<? super Path>, List<Path>> createSubNodeF;
+    Comparator<? super IPathNode> comp;
+    IOException creationError;
 
 
-    private RegularPathNode( final IPathNode parentNode, Path value ) {
+     RegularPathNode( final IPathNode parentNode, Path value ) {
 
         this.parentNode = parentNode;
         this.path = value;
@@ -110,10 +105,11 @@ public class RegularPathNode implements IPathNode {
         return subPathL.stream()
                 .sorted()
                 .map( p -> RegularPathNode.of( parent, p ) )
+
                 .collect( Collectors.toList() );
     }
 
-    private void init() {
+     void init() {
 
         this.name = PathInfo.fileSystemName( path );
         this.desc = PathInfo.fileSystemTypeDesc( path );
@@ -124,7 +120,7 @@ public class RegularPathNode implements IPathNode {
         this.hidden = PathInfo.isHidden( path );
         this.depth = path.getNameCount();
         this.fileLen = PathInfo.getLength( path );
-        this.ftCreate = ModIO.readFileCreationTimeSafe( path );
+        this.ftCreate = ModIO.readFileCreationTimeSafe( path ).orElse( null );
     }
 
     /**
@@ -324,20 +320,20 @@ public class RegularPathNode implements IPathNode {
     public String toString() {
 
         return "RegularPathNode{" +
-                "path=" + path +
-                ", parentNode=" + parentNode +
-                ", depth=" + depth +
-                ", name='" + name + '\'' +
-                ", desc='" + desc + '\'' +
-                ", type='" + type + '\'' +
-                ", dir=" + dir +
-                ", symLink=" + symLink +
-                ", hidden=" + hidden +
-                ", readable=" + readable +
-                ", created=" + created +
-                ", fileLen=" + fileLen +
-                ", ftCreate=" + ftCreate +
-                ", creationError=" + creationError +
+                "path='" + path +
+                "', parentNode='" + (null == parentNode ? "<null>" : parentNode.getName()) +
+                "', depth='" + depth +
+                "', name='" + name +
+                "', desc='" + desc +
+                "', type='" + type +
+                "', dir='" + dir +
+                "', symLink='" + symLink +
+                "', hidden='" + hidden +
+                "', readable='" + readable +
+                "', sub created='" + created +
+                "', fileLen='" + fileLen +
+                "', ftCreate='" + ftCreate +
+                "', creationError=" + creationError +
                 '}';
     }
 }

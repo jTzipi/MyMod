@@ -105,7 +105,7 @@ public final class PathInfo {
      * on linux like systems this is '/'.
      *
      * @param path path
-     * @return
+     * @return {@code true} if {@code path} is root path
      */
     public static boolean isRoot( final Path path ) {
 
@@ -152,7 +152,7 @@ public final class PathInfo {
     /**
      * Return whether path is hidden.
      *
-     * @param path
+     * @param path path
      * @return
      */
     public static boolean isHidden( final Path path ) {

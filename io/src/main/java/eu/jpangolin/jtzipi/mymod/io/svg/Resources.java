@@ -16,6 +16,7 @@
 
 package eu.jpangolin.jtzipi.mymod.io.svg;
 
+import eu.jpangolin.jtzipi.mymod.io.ModIO;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
@@ -36,10 +37,21 @@ import java.util.regex.Pattern;
 final class Resources {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger( Resources.class );
-    private static final String PROP_SVG = "svg.";
-    private static final String PROP_FILE = ".file";
-    private static final String PROP_REGEX = ".regex";
-    private static final String PROP_DIR = ".dir";
+
+    // Prefix of all svg related properties of
+    // keys from 'provider.properties'
+    private static final String PROP_PREFIX_SVG = "svg.";
+    // Suffix for the file location
+    private static final String PROP_SUFFIX_FILE = ".file";
+    // Suffix for the regex
+    private static final String PROP_SUFFIX_REGEX = ".regex";
+    // Suffix for folder to look for svg
+    private static final String PROP_SUFFIX_DIR = ".dir";
+
+    private static final String REGEX_CAPTURING_GRP_ID = "id";
+    private static final String REGEX_CAPTURING_GRP_PATH  = "d";
+
+    // This hold the 'provider.properties'
     private static Properties PROP;
 
     private Resources() {
@@ -50,12 +62,7 @@ final class Resources {
 
     private static void loadProp() throws IOException {
 
-        PROP = new Properties();
-        try ( InputStream is = Resources.class.getResourceAsStream( "svg.properties" ) ) {
-
-            PROP.load( is );
-        }
-
+        PROP = ModIO.loadPropertiesFromResource( Resources.class, "provider.properties" );
     }
 
     private static boolean isNotPropLoaded() {
@@ -74,7 +81,7 @@ final class Resources {
     }
 
     private static String joinProperty( String prop, String suffix ) {
-        return PROP_SVG + prop + suffix;
+        return PROP_PREFIX_SVG + prop + suffix;
     }
 
     private static void parseSvg( String regex, String svgFile, Map<String, String> map ) {
@@ -84,8 +91,8 @@ final class Resources {
         // look for id and d value -> SVG Path
         //
         while ( matcher.find() ) {
-            String pathId = matcher.group( "id" );
-            String d = matcher.group( "d" );
+            String pathId = matcher.group( REGEX_CAPTURING_GRP_ID );
+            String d = matcher.group( REGEX_CAPTURING_GRP_PATH );
 
             // LOG.info( "Symbol '{}' found ", pathId );
             map.put( pathId, d );
@@ -132,6 +139,12 @@ final class Resources {
 
     }
 
+    /**
+     * Try to load the complete svg sprite 'map' for type.
+     * @param svgType svg provider
+     * @param map map of {@literal {Spritename, Sprite}}
+     * @throws IOException fail
+     */
     static void loadMap( String svgType, Map<String, String> map ) throws IOException {
 
         if ( isNotPropLoaded() ) {
@@ -140,13 +153,13 @@ final class Resources {
 
 
         // -- properties
-        String propFile = joinProperty( svgType, PROP_FILE );
-        String propRegEx = joinProperty( svgType, PROP_REGEX );
-
+        // 1. file to parse
+        // 2. regexp to scan
+        String propFile = joinProperty( svgType, PROP_SUFFIX_FILE );
+        String propRegEx = joinProperty( svgType, PROP_SUFFIX_REGEX );
 
         // -- values
         String file = getProp( propFile );
-        // String regexId = getProp( propId );
         String regex = getProp( propRegEx );
 
         LOG.info( "Try to read file '{}' parsing  path '{}'", file, regex );
@@ -165,8 +178,8 @@ final class Resources {
             loadProp();
         }
 
-        String keyDir = joinProperty( type, PROP_DIR );
-        String keyRegEx = joinProperty( type, PROP_REGEX );
+        String keyDir = joinProperty( type, PROP_SUFFIX_DIR );
+        String keyRegEx = joinProperty( type, PROP_SUFFIX_REGEX );
         String dir = getProp( keyDir );
         String regEx = getProp( keyRegEx );
 
@@ -174,7 +187,7 @@ final class Resources {
             throw new IOException( "Failed to read dir for key[='" + keyDir + "'] and or regex[='" + keyRegEx + "']from properties!" );
         }
 
-        String file = dir + "/" + name + PROP_SVG;
+        String file = dir + "/" + name + PROP_PREFIX_SVG;
         LOG.info( "try to load svg = '{}' parsing '{}'", file, regEx );
 
         String svg = readFile( file );

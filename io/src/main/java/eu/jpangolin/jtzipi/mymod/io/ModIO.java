@@ -27,7 +27,6 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
@@ -51,6 +50,10 @@ public final class ModIO {
     public static final long LENGTH_PATH_NA = -2L;
 
     /**
+     * Placeholder for a non av. file time.
+     */
+    public static final FileTime FILE_TIME_NA = FileTime.from(Instant.EPOCH);
+    /**
      * Match all .
      */
     public static final Predicate<? super Path> ACCEPT_ANY_PATH = path -> true;
@@ -62,6 +65,9 @@ public final class ModIO {
      * Minimal font size.
      */
     public static final double FONT_MIN_SIZE = 2D;
+
+
+    public static final Path PATH_LINUX_NOT_FOUND = Paths.get("/dev/null");
     /**
      * Match all files path filer.
      */
@@ -72,10 +78,6 @@ public final class ModIO {
      */
     public static final DirectoryStream.Filter<Path> DIR_STREAM_ACCEPT_DIR = Files::isDirectory;
 
-    /**
-     * File Time for failed read attempt.
-     */
-    public static final FileTime FILE_TIME_NA = FileTime.from( Instant.from( LocalDate.of( 1900, 1, 1 ) ) );
     /**
      * Multipurpose 'not found' placeholder.
      */
@@ -419,6 +421,28 @@ public final class ModIO {
     }
 
     /**
+     * Try to load an image via resources.
+     *
+     * @param cls class
+     * @param fileNameStr file
+     * @return buffered image
+     * @throws IOException Failed
+     * @throws IllegalStateException if {@code fileNameStr} is not readable hence the stream is null
+     * @throws NullPointerException if {@code cls} | {@code fileNameStr}
+     */
+    public static java.awt.image.BufferedImage loadBufferedImageFromResource( final Class<?> cls, final String fileNameStr ) throws IOException {
+        Objects.requireNonNull( cls );
+        Objects.requireNonNull( fileNameStr );
+        try( InputStream is = cls.getResourceAsStream( fileNameStr ) ) {
+            if( null == is ) {
+                throw new IllegalStateException("file [='"+fileNameStr+"'] not found for class [='"+cls+"']");
+            }
+            return ImageIO.read( is );
+        }
+
+    }
+
+    /**
      * Try to load a file as a javafx image.
      *
      * @param path path to image
@@ -491,6 +515,33 @@ public final class ModIO {
         return font;
     }
 
+
+    /**
+     * Load a font from resource.
+     * @param cls class
+     * @param fileNameStr file name
+     * @param fontSize font size [{@linkplain #FONT_MIN_SIZE} .. ]
+     * @return font
+     * @throws IOException fail to load font
+     * @throws IllegalStateException if file name is not found
+     * @throws NullPointerException if {@code cls} | {@code fileNameStr}
+     */
+    public static javafx.scene.text.Font loadFontFromResource( final Class<?> cls, final String fileNameStr, double fontSize ) throws
+            IOException {
+
+        Objects.requireNonNull( cls );
+        Objects.requireNonNull( fileNameStr );
+        fontSize = Math.max( fontSize, FONT_MIN_SIZE );
+
+        try( InputStream is = cls.getResourceAsStream( fileNameStr ) ) {
+            if( null == is ) {
+                throw new IllegalStateException("");
+            }
+
+            return Font.loadFont( is, fontSize );
+        }
+    }
+
     /**
      * Load Properties from path.
      *
@@ -554,22 +605,41 @@ public final class ModIO {
         Objects.requireNonNull( cls );
         Objects.requireNonNull( fileStr );
         Properties prop = new Properties();
-        LOG.info( "try to load '" + fileStr + "' from '" + cls.getSimpleName() + "'" );
+        loadPropertiesFromResource( cls, fileStr, prop );
+        return prop;
+
+    }
+    /**
+     * Read a '.properties'-file as a resource located file.
+     *
+     * @param cls     cls
+     * @param fileStr file name
+     * @param properties properties
+     * @throws IOException           if file not readable
+     * @throws IllegalStateException if stream is null
+     * @throws NullPointerException  if {@code cls}|{@code fileStr}|{@code properties} is null
+     */
+    public static void loadPropertiesFromResource( final Class<?> cls, final String fileStr, final Properties properties ) throws IOException {
+        Objects.requireNonNull( cls );
+        Objects.requireNonNull( fileStr );
+        Objects.requireNonNull( properties );
+
+        LOG.info( "try to load '{}' from '{}'", fileStr, cls.getSimpleName() );
         try ( InputStream is = cls.getResourceAsStream( fileStr ) ) {
 
             if ( null == is ) {
-                throw new IllegalStateException( "File not found or not readable" );
+                throw new IllegalStateException( "File '"+ fileStr+"' not found or not readable" );
             }
-            prop.load( is );
+            properties.load( is );
 
         }
-        LOG.info( "'" + fileStr + "' loaded Okay!" );
-        return prop;
+        LOG.info( "'{}' loaded Okay!", fileStr );
+
 
     }
 
     /**
-     * Load a resource.
+     * Load a resource as a string wrapped in an StringBuilder.
      *
      * @param cls           cls to load from
      * @param fileStr       file name
@@ -578,7 +648,7 @@ public final class ModIO {
      * @throws IOException          fail to load
      * @throws NullPointerException if {@code cls}|{@code fileStr}
      */
-    public static StringBuilder loadResource( final Class<?> cls, String fileStr, boolean appendNewLine ) throws IOException {
+    public static StringBuilder loadResourceString( final Class<?> cls, String fileStr, boolean appendNewLine ) throws IOException {
         Objects.requireNonNull( cls, "class is null" );
         Objects.requireNonNull( fileStr, "File is null!" );
         StringBuilder sb = new StringBuilder();
@@ -646,10 +716,10 @@ public final class ModIO {
      * Try to read file creation time.
      *
      * @param path path
-     * @return file creation time or {@linkplain #FILE_TIME_NA}
+     * @return optional of file creation
      * @throws NullPointerException if {@code path} is null
      */
-    public static FileTime readFileCreationTimeSafe( final Path path ) {
+    public static Optional<FileTime> readFileCreationTimeSafe( final Path path ) {
 
         FileTime ft;
 
@@ -657,10 +727,10 @@ public final class ModIO {
             ft = readFileCreationTime( path );
         } catch ( IOException ioE ) {
 
-            ft = FILE_TIME_NA;
+            ft = null;
         }
 
-        return ft;
+        return null == ft ? Optional.empty(): Optional.of(ft);
     }
 
     private static void findDirsRecursive( Path path, List<Path> dirList, LinkOption... lop ) {

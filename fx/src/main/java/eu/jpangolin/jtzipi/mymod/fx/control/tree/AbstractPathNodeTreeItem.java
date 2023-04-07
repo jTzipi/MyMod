@@ -1,5 +1,6 @@
 package eu.jpangolin.jtzipi.mymod.fx.control.tree;
 
+import eu.jpangolin.jtzipi.mymod.io.ModIO;
 import eu.jpangolin.jtzipi.mymod.node.INode;
 import eu.jpangolin.jtzipi.mymod.node.path.IPathNode;
 import javafx.beans.property.*;
@@ -13,6 +14,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+
+import static eu.jpangolin.jtzipi.mymod.node.path.IPathNode.PREDICATE_ACCEPT_PATH_ALL;
 
 /**
  * Base class for {@linkplain IPathNode} wrapping tree node.
@@ -49,8 +52,14 @@ import java.util.stream.Stream;
 public abstract class AbstractPathNodeTreeItem extends TreeItem<IPathNode> {
 
 
+    /**
+     * Predicate to filter dir.
+     */
+    public static final Predicate<? super IPathNode> PREDICATE_DIR_ONLY = IPathNode::isDir;
+
+
     static final org.slf4j.Logger BASE_LOG = LoggerFactory.getLogger( AbstractPathNodeTreeItem.class );
-    static final ObjectProperty<Predicate<? super IPathNode>> FX_GLOBAL_FILTER_PROP = new SimpleObjectProperty<>();
+    static final ObjectProperty<Predicate<? super IPathNode>> FX_GLOBAL_FILTER_PROP = new SimpleObjectProperty<>( pathNode -> true );
 
     static TreeItemNotifier TINO;
     /**
@@ -135,10 +144,10 @@ public abstract class AbstractPathNodeTreeItem extends TreeItem<IPathNode> {
     @Override
     public ObservableList<TreeItem<IPathNode>> getChildren() {
 
-        BASE_LOG.info( "@getChildren() not loaded? {}", isNotLoaded() );
+        // BASE_LOG.info( "@getChildren() not loaded? {}", isNotLoaded() );
 
         if ( isNotLoaded() ) {
-            BASE_LOG.info( "... create Sub Nodes ..." );
+            BASE_LOG.info( "... create Sub Nodes for {} ...", getValue() );
             computeSubNodes();
         }
 

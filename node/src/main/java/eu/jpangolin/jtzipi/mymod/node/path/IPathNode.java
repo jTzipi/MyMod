@@ -22,6 +22,8 @@ import eu.jpangolin.jtzipi.mymod.node.INode;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
+import java.text.Collator;
+import java.util.Comparator;
 import java.util.function.Predicate;
 
 /**
@@ -44,6 +46,12 @@ import java.util.function.Predicate;
  */
 public interface IPathNode extends INode<Path>, Comparable<IPathNode> {
 
+
+
+    Comparator<? super IPathNode> DEF_COMP = Comparator.comparing( IPathNode::isDir )
+            .thenComparing( ( p1, p2 ) -> Collator.getInstance().compare( p1.getName(), p2.getName() ) )
+            .thenComparing( INode::getValue)
+            .reversed();
     /**
      * Predicate that accept all.
      */
