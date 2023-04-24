@@ -106,13 +106,13 @@ public final class PathInfo {
      *
      * @param path path
      * @return {@code true} if {@code path} is root path
-     */
+
     public static boolean isRoot( final Path path ) {
 
         Objects.requireNonNull( path );
         return OS.getSystemOS().getRootPathStr().equalsIgnoreCase( path.toString() );
     }
-
+*/
     public static boolean isDir( final Path path ) {
 
         return tof( path ).isDirectory();

@@ -33,6 +33,12 @@ public final class ModUtils {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger( ModUtils.class );
 
+    public static final double MIN_OPACITY = 0D;
+    public static final double MAX_OPACITY = 1D;
+    public static final double MIN_ROTATION = -360D;
+    public static final double MAX_ROTATION = 360D;
+
+
     private ModUtils() {
 
     }

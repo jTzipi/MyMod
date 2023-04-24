@@ -1,19 +1,16 @@
 package eu.jpangolin.jtzipi.mymod.fx.service;
 
 
-import eu.jpangolin.jtzipi.mymod.io.ICloseOnExit;
-
+import eu.jpangolin.jtzipi.mymod.io.async.AbstractBackgroundService;
 import javafx.beans.property.ReadOnlySetProperty;
 import javafx.beans.property.ReadOnlySetWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
-import org.slf4j.LoggerFactory;
 
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -34,14 +31,10 @@ import java.util.concurrent.TimeUnit;
  *
  * @author jTzipi
  */
-public enum WinRootPathWatcher implements ICloseOnExit {
+public class WinRootPathWatcher extends AbstractBackgroundService {
 
-    /**
-     * Single only instance.
-     */
-    SINGLETON;
-    public static final long MIN_DELAY = 0L;
-    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger( WinRootPathWatcher.class );
+    public static final long MIN_RATE = 1L;
+
     //
     private static final ScheduledExecutorService SES = Executors.newSingleThreadScheduledExecutor();
     private static final ObservableSet<Path> ROOT_PATH_SET = FXCollections.observableSet();
@@ -68,12 +61,38 @@ public enum WinRootPathWatcher implements ICloseOnExit {
         // ROOT_PATH_SET.removeIf( path -> !rootS.contains( path ) );
     };
 
+    // -- property of scheduled task --
+    private final long delay;       // initial delay
+    private final long rate;        // time between call
+    private final TimeUnit tiun;    // time unit
+    private boolean started = false;
 
-    private boolean watching = false;
+    WinRootPathWatcher(long delay, long rate, TimeUnit timeUnit) {
+        super("Windows Root Path Watcher");
+        this.delay = delay;
+        this.rate = rate;
+        this.tiun = timeUnit;
+    }
 
-    WinRootPathWatcher() {
+    /**
+     * Start the watch task.
+     *
+     * @param delay initial delay [0 .. ]
+     * @param rate  rate [1 .. ]
+     * @param tiun  time unit
+     */
+    public static WinRootPathWatcher create( long delay, long rate, TimeUnit tiun ) {
 
 
+        delay = Math.max( delay, MIN_DELAY );
+        rate = Math.max(MIN_RATE, rate);
+        if( null == tiun) {
+            tiun = DEF_TIME_UNIT;
+        }
+
+        LOG.info( "Start watching ...\nDelay = {}\nPeriod = {}\nUnit = {}", delay, rate, tiun );
+
+        return new WinRootPathWatcher(delay, rate, tiun);
     }
 
 
@@ -86,65 +105,27 @@ public enum WinRootPathWatcher implements ICloseOnExit {
         return ROOT_PATH_SW.getReadOnlyProperty();
     }
 
-    /**
-     * Start the watch task.
-     *
-     * @param delay initial delay [0 .. ]
-     * @param rate  rate [1 .. ]
-     * @param tiun  time unit
-     * @throws NullPointerException     if {@code tiun} is null
-     * @throws IllegalArgumentException if {@code rate} &le; 0
-     * @throws IllegalStateException    if scheduled executor shutdown
-     */
-    public void start( long delay, long rate, TimeUnit tiun ) {
-        Objects.requireNonNull( tiun );
-
-        //;
-        if ( SES.isShutdown() ) {
-            throw new IllegalStateException( "Scheduled E. shutdown" );
-        }
-
-        if ( isWatching() ) {
-
-            LOG.warn( "Watcher is watching!" );
-            return;
-        }
-
-        delay = Math.max( delay, MIN_DELAY );
-        LOG.info( "Start watching ...\nDelay = {}\nPeriod = {}\nUnit = {}", delay, rate, tiun );
-        SES.scheduleAtFixedRate( SCAN, delay, rate, tiun );
-        watching = true;
-    }
-
-    /**
-     * Stop watching.
-     * We also shut down the scheduled executor.
-     */
-    public void stop() {
-        if ( SES.isShutdown() ) {
-            LOG.warn( "SES already shutdown" );
-            return;
-        }
-        LOG.info( "Shutting down..." );
-        SES.shutdown();
-        watching = false;
-        LOG.info( "SES is shutdown!" );
-    }
-
-    /**
-     * Is this watch service watching.
-     *
-     * @return {@code true} if watching
-     */
-    public boolean isWatching() {
-        return watching;
+    @Override
+    public boolean isFinished() {
+        return SES.isShutdown();
     }
 
     @Override
-    public void onExit() {
+    public boolean isRunning() {
+        return started && !SES.isShutdown();
+    }
 
-        if ( isWatching() ) {
-            stop();
-        }
+    @Override
+    protected void startService()  {
+
+        SES.scheduleAtFixedRate( SCAN, delay, rate, tiun );
+        started = true;
+    }
+
+    @Override
+    protected void stopService()  {
+
+        SES.shutdown();
+        started = false;
     }
 }

@@ -16,15 +16,13 @@
 
 package eu.jpangolin.jtzipi.mymod.io.watcher;
 
-import eu.jpangolin.jtzipi.mymod.io.ICloseOnExit;
+import eu.jpangolin.jtzipi.mymod.io.async.AbstractBackgroundService;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -37,7 +35,7 @@ import static java.nio.file.StandardWatchEventKinds.*;
  *
  * @author jTzipi
  */
-public final class FileSystemWatcher implements ICloseOnExit {
+public final class FileSystemWatcher extends AbstractBackgroundService {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger( "FSW" );
     private static final ExecutorService EXEC = Executors.newSingleThreadExecutor();
@@ -48,10 +46,10 @@ public final class FileSystemWatcher implements ICloseOnExit {
     private final Map<WatchKey, Path> keyMap = new HashMap<>();
     private final Set<IFileSystemPathWatchListener> listenerList = new HashSet<>();
     private final boolean trace;
-    private Future<?> task;
+    private Future<?> task; // control the background task
 
     FileSystemWatcher( final WatchService ws, final Set<Path> rootSet, final boolean trace ) {
-
+        super("File System Watcher");
         this.ws = ws;
         this.rootSet.addAll( rootSet );
         this.trace = trace;
@@ -72,9 +70,7 @@ public final class FileSystemWatcher implements ICloseOnExit {
 
         WatchService watchService = FileSystems.getDefault().newWatchService();
 
-        FileSystemWatcher fsw = new FileSystemWatcher( watchService, Set.of( roots ), trace );
-        fsw.init();
-        return fsw;
+        return new FileSystemWatcher( watchService, Set.of( roots ), trace );
     }
 
     /**
@@ -91,19 +87,13 @@ public final class FileSystemWatcher implements ICloseOnExit {
         return ( WatchEvent<T> ) wk;
     }
 
-    @Override
-    public void onExit() throws IOException {
 
-        stop();
-    }
 
     private void init() {
 
         for ( final Path root : rootSet ) {
-
             register( root );
         }
-
 
     }
 
@@ -136,52 +126,56 @@ public final class FileSystemWatcher implements ICloseOnExit {
         return listenerList.remove( listener );
     }
 
+    @Override
+    public boolean isFinished() {
+        return EXEC.isShutdown();
+    }
+
+    @Override
+    protected void preStart() {
+        init();
+    }
+
     /**
      * Start watch service.
      * <p></p>
      */
-    public void start() {
-        if ( isWatching() ) {
-            LOG.warn( "This watcher " );
+    @Override
+    protected void startService() throws IOException {
 
-        }
         LOG.info( "Start Watch Service" );
         task = EXEC.submit( this::watch );
 
     }
 
-    public boolean restart( boolean cancelIfStart ) {
-        if ( isWatching() ) {
-
-            LOG.warn( "Watcher already watching" );
-            if ( cancelIfStart ) {
-                boolean canceled = task.cancel( true );
-                LOG.info( "Task Canceled ? {}", canceled );
-                if ( !canceled ) {
-                    return false;
-                }
-            } else {
-                return false;
-            }
-        }
-
-        start();
-        return true;
-    }
+//    public boolean restart( boolean cancelIfStart ) {
+//        if ( isWatching() ) {
+//
+//            LOG.warn( "Watcher already watching" );
+//            if ( cancelIfStart ) {
+//                boolean canceled = task.cancel( true );
+//                LOG.info( "Task Canceled ? {}", canceled );
+//                if ( !canceled ) {
+//                    return false;
+//                }
+//            } else {
+//                return false;
+//            }
+//        }
+//
+//        start();
+//        return true;
+//    }
 
     /**
      * Stop watch service.
      *
      * @throws IOException IO Error
      */
-    public void stop() throws IOException {
+    @Override
+    protected void stopService() throws IOException {
+        
 
-        if ( !isWatching() ) {
-            LOG.warn( "This watcher was not watching" );
-            return;
-        }
-
-        // TODO: shutdown
         // we don't need result so we can
         EXEC.shutdownNow();
         // close watch service
@@ -193,8 +187,9 @@ public final class FileSystemWatcher implements ICloseOnExit {
      *
      * @return {@code true} when watching
      */
-    public boolean isWatching() {
-        return null != task && !task.isCancelled();
+    @Override
+    public boolean isRunning() {
+        return !EXEC.isShutdown() && null != task && !task.isCancelled();
     }
 
     private void registerRecursive( final Path rootPath ) {
@@ -215,7 +210,7 @@ public final class FileSystemWatcher implements ICloseOnExit {
                 @Override
                 public FileVisitResult visitFileFailed( Path file, IOException exc ) throws IOException {
 
-                    LOG.warn( "Failed to register watcher for dir '{}'.\nReason:'{}'", file, exc );
+                    LOG.warn( "Failed to register watcher for dir '{}'.", file, exc );
                     unregPathSet.add( file );
                     firePathNotRegistered( file );
                     return FileVisitResult.CONTINUE;
@@ -316,19 +311,6 @@ public final class FileSystemWatcher implements ICloseOnExit {
                 // send event
                 fireStandardEvent( swe, dir, changedPath, pwe.count() );
 
-//                if ( SystemWatchEvent.EVENT_CREATE == swe && Files.isDirectory( changedPath ) && recursive ) {
-//
-//                    try {
-//                        // if we receive a created dir event, and we
-//                        // want to listen for all directories recursive
-//                        // we need to register them
-//                        registerRecursive( changedPath );
-//                    } catch ( IOException ioE ) {
-//
-//                        LOG.warn( "Failed to register sub folders of '{}'!", changedPath );
-//                    }
-//
-//                }
 
                 final boolean reset = watchKey.reset();
                 LOG.debug( "Watch key reset ? {}", reset );
@@ -399,6 +381,7 @@ public final class FileSystemWatcher implements ICloseOnExit {
             listener.onFileNotRegistered( path );
         }
     }
+
 
     /**
      * System Events like those of {@link StandardWatchEventKinds}.

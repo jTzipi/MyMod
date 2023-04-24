@@ -335,7 +335,7 @@ public final class ModIO {
         try {
             return getFileNameSuffix( path );
         } catch ( IOException ioE ) {
-            LOG.debug( "Failed to read path[='" + path + "']", ioE );
+            LOG.info( "Failed to read path[='" + path + "']", ioE );
             return NA;
         }
     }

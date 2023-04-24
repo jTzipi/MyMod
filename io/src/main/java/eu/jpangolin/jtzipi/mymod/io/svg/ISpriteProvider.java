@@ -26,6 +26,7 @@ public interface ISpriteProvider {
      *
      * @param idStr id of svg
      * @return svg with prefix 'path://'
+     * @throws NullPointerException if {@code idStr} is null
      */
     default String svgPathFor( String idStr ) {
         return "path://" + svgFor( idStr );

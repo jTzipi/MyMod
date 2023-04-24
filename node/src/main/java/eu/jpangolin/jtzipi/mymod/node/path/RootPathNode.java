@@ -248,7 +248,7 @@ init();
         LOG.info( "-- detected Windows" );
         // set computer name
         rootName = System.getenv( "COMPUTERNAME" );
-        rootPath = Paths.get( "/" );
+        rootPath = Paths.get( "C:" );
         List<DrivePathNode> drivePathNodeList = blockDevices(OS.WINDOWS);
 
         Path userHomePath = OS.getHomeDir();
@@ -261,7 +261,7 @@ init();
 
     private void initUnixmac( String root ) {
         LOG.info( "-- detected Linux/Mac/Unix" );
-        this.rootName = root;
+        this.rootName = "root";
         this.rootPath = Paths.get( root );
 
         final  RegularPathNode linuxRootNode = RegularPathNode.of(this, rootPath);

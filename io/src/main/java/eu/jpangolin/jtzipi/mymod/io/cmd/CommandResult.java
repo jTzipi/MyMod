@@ -3,14 +3,17 @@ package eu.jpangolin.jtzipi.mymod.io.cmd;
 /**
  * This is the 'result' of a native system command.
  * @param result raw result
- * @param exitCode exit code
+ * @param proc proc
  * @param t error
+ *
+ * @author jTzipi
  */
-record CommandResult(String result, int exitCode, Throwable t) implements ICommandRawResult {
+record CommandResult(  String result, Process proc, Throwable t) implements ICommandResult {
+
 
     @Override
-    public int getExitCode() {
-        return exitCode;
+    public Process getProcess() {
+        return proc;
     }
 
     @Override

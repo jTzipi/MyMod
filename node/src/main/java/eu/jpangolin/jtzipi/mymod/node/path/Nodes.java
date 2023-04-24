@@ -4,6 +4,7 @@ import eu.jpangolin.jtzipi.mymod.io.ModIO;
 import eu.jpangolin.jtzipi.mymod.io.OS;
 import eu.jpangolin.jtzipi.mymod.io.PathInfo;
 import eu.jpangolin.jtzipi.mymod.io.cmd.LinuxCmds;
+import eu.jpangolin.jtzipi.mymod.io.cmd.linux.LsblkCmd;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -11,7 +12,6 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Class to create specific types of Nodes.
@@ -49,10 +49,21 @@ public final class Nodes {
     }
 
     private static List<DrivePathNode> linuxDrives(IPathNode sysRoot) throws IOException, InterruptedException {
-        LinuxCmds.Lsblk lsblk= LinuxCmds.lsblk( 17L, TimeUnit.SECONDS );
+
+
+
+        Optional<LsblkCmd.Lsblk> result = LinuxCmds.lsblk().launch();
 
 
         List<DrivePathNode> driveList = new ArrayList<>();
+        // Did not find anything or error
+        if(result.isEmpty())  {
+
+            LOG.warn("No drives found");
+            return driveList;
+        }
+
+        LsblkCmd.Lsblk lsblk = result.get();
         String userName = OS.getUser();
 
         // parent path where all linux media devices are mount
@@ -61,7 +72,7 @@ public final class Nodes {
         // for each disk there are one or more partition
         // some of them mounted
         //
-        for( LinuxCmds.Disk disk : lsblk.diskMap().values() ) {
+        for( LsblkCmd.Disk disk : lsblk.diskMap().values() ) {
 
             String tranType = disk.tranTypeStr();
             String nameDisk = disk.nameStr();
@@ -71,7 +82,7 @@ public final class Nodes {
 
             //
             // Partition
-            for ( LinuxCmds.Partition part : disk.partList() ) {
+            for ( LsblkCmd.Partition part : disk.partList() ) {
                 String mountPoint = part.mountpointStr();
                 String fsType = part.fsTypeStr();
                 String label = part.labelStr();
@@ -97,7 +108,7 @@ public final class Nodes {
                                 fsType,
                                 partSize,
                                 availableDisk,
-                                mounted
+                                false
                                 );
 
                         driveList.add(notMountedDrive);
@@ -146,7 +157,7 @@ public final class Nodes {
                             fsType,
                             partSize,
                             availablePart,
-                            mounted );
+                            true);
 
                     driveList.add(partNode);
                 }
@@ -156,7 +167,7 @@ public final class Nodes {
 
         } // -- end disk
 
-        for ( LinuxCmds.Rom rom : lsblk.romList() ) {
+        for ( LsblkCmd.Rom rom : lsblk.romList() ) {
 
             String tranType = rom.tranTypeStr();
             long availableRom = Long.parseLong(rom.fsAvailStr());
@@ -185,7 +196,7 @@ public final class Nodes {
                         fsType,
                         sizeRom,
                         availableRom,
-                        mounted
+                        false
                         );
 
                     driveList.add(notMountedRom);

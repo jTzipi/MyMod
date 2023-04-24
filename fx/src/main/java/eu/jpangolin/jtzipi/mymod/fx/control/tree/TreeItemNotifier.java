@@ -74,7 +74,7 @@ public final class TreeItemNotifier implements IFileSystemPathWatchListener {
         }
         // if we don't start the system watcher when not running
         // we can' receive events!
-        if ( !fsw.isWatching() && !startWatcherIfIsNotRunning ) {
+        if ( !fsw.isRunning() && !startWatcherIfIsNotRunning ) {
 
             LOG.warn( "FileSystemWatcher is not watching and you don't allow to start. Can't watch for events!" );
             this.observing = false;
@@ -85,7 +85,7 @@ public final class TreeItemNotifier implements IFileSystemPathWatchListener {
         fsw.addListener( this );
 
         // start watcher if not started
-        if ( !fsw.isWatching() ) {
+        if ( !fsw.isRunning() ) {
             fsw.start();
         }
 
