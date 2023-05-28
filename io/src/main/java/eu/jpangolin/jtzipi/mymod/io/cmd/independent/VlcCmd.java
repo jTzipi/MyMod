@@ -14,23 +14,27 @@
  *    limitations under the License.
  */
 
-package eu.jpangolin.jtzipi.mymod.utils;
+package eu.jpangolin.jtzipi.mymod.io.cmd.independent;
 
-import java.time.Duration;
-import java.util.concurrent.TimeUnit;
+import eu.jpangolin.jtzipi.mymod.io.cmd.IProgramCommand;
 
-public record TimePerUnit(long time, TimeUnit timeUnit, Range<Long> range ) {
+import java.io.IOException;
+import java.util.List;
 
-    public TimePerUnit( long time, TimeUnit timeUnit, Range<Long> range) {
-        this.time = ModUtils.clamp(time, range.min(), range.max());
-        this.timeUnit = null == timeUnit ? TimeUnit.SECONDS : timeUnit;
-        this.range = range;
+public class VlcCmd implements IProgramCommand {
+
+    @Override
+    public String getName() {
+        return "VLC";
     }
-    /**
-     * Convert time  and time unit to a java.time.Duration.
-     * @return Duration of time and unit
-     */
-    public Duration toDuration() {
-        return Duration.of(time, timeUnit.toChronoUnit());
+
+    @Override
+    public List<String> getArgs() {
+        return null;
+    }
+
+    @Override
+    public ProcessHandle start() throws IOException {
+        return null;
     }
 }

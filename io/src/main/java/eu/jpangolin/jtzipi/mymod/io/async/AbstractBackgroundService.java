@@ -1,3 +1,19 @@
+/*
+ *    Copyright (c) 2022-2023 Tim Langhammer
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package eu.jpangolin.jtzipi.mymod.io.async;
 
 import eu.jpangolin.jtzipi.mymod.utils.Range;
@@ -52,6 +68,12 @@ public abstract class AbstractBackgroundService implements IBackgroundService {
     public final static void setLogger( org.slf4j.Logger logger ) {
         AbstractBackgroundService.LOG = Objects.requireNonNull(logger);
     }
+
+    @Override
+    public boolean iStarted() {
+        return started;
+    }
+
     @Override
     public void start()  {
         //
@@ -67,7 +89,7 @@ public abstract class AbstractBackgroundService implements IBackgroundService {
             return;
         }
         // 2.
-        if(isFinished()){
+        if(iStopped()){
             LOG.error("Service '{}' is terminated!", getDescription());
             return;
         }
@@ -77,7 +99,7 @@ public abstract class AbstractBackgroundService implements IBackgroundService {
             preStart();
             // 3.2
             startService();
-
+            started = true;
             LOG.info("~ {} started!", getDescription());
 
         } catch (IOException ioE) {
@@ -103,7 +125,7 @@ public abstract class AbstractBackgroundService implements IBackgroundService {
         }
 
         // 2.
-        if(isFinished()) {
+        if(iStopped()) {
             LOG.warn("Try to stop service '{}' which is terminated", getDescription());
             return;
         }
@@ -111,6 +133,7 @@ public abstract class AbstractBackgroundService implements IBackgroundService {
          try {
             // 3.
              stopService();
+             started = false;
             LOG.info("~ {} stopped",getDescription());
             // 3.2
             postShutdown();
@@ -122,13 +145,13 @@ public abstract class AbstractBackgroundService implements IBackgroundService {
 
     @Override
     public void startDelayed(long delay, TimeUnit timeUnit) {
-        TimePerUnit tpu = new TimePerUnit(delay, timeUnit, new Range<>(MIN_DELAY, MAX_DELAY));
+        TimePerUnit tpu = new TimePerUnit(delay, timeUnit, new Range<>(MIN_DELAY, MAX_DELAY, true));
         Executors.newSingleThreadScheduledExecutor().schedule(this::start, tpu.time(), tpu.timeUnit());
     }
 
     @Override
     public void stopDelayed(long delay, TimeUnit timeUnit)  {
-        TimePerUnit tpu = new TimePerUnit(delay, timeUnit, new Range<>(MIN_DELAY, MAX_DELAY));
+        TimePerUnit tpu = new TimePerUnit(delay, timeUnit, new Range<>(MIN_DELAY, MAX_DELAY, true));
         Executors.newSingleThreadScheduledExecutor().schedule(this::stop, tpu.time(), tpu.timeUnit());
     }
 

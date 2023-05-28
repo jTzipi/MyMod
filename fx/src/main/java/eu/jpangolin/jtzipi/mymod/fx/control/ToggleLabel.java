@@ -1,6 +1,5 @@
-package eu.jpangolin.jtzipi.mymod.fx.control;
 /*
- * Copyright (c) 2022 Tim Langhammer
+ *    Copyright (c) 2022-2023 Tim Langhammer
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -14,6 +13,8 @@ package eu.jpangolin.jtzipi.mymod.fx.control;
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
+
+package eu.jpangolin.jtzipi.mymod.fx.control;
 
 
 import javafx.beans.property.BooleanProperty;

@@ -1,3 +1,19 @@
+/*
+ *    Copyright (c) 2022-2023 Tim Langhammer
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package eu.jpangolin.jtzipi.mymod.io.async;
 
 import java.util.concurrent.TimeUnit;
@@ -16,8 +32,6 @@ import java.util.concurrent.TimeUnit;
  *         <li>Start with delay</li>
  *         <li>Stoppable</li>
  *         <li>Stop with delay</li>
- *         <li>Optional cancelable</li>
- *         <li>Optional resumable</li>
  *         <li>Respond to program exit</li>
  *     </ul>
  * </p>
@@ -45,7 +59,7 @@ public interface IBackgroundService {
      * @param delay delay [{@link #MIN_DELAY} ..
      * @param timeUnit timeUnit
      */
-    void startDelayed(long delay, TimeUnit timeUnit ) ;
+    void startDelayed(long delay, TimeUnit timeUnit );
 
     /**
      * Stop this service.
@@ -65,16 +79,23 @@ public interface IBackgroundService {
     String getDescription();
 
     /**
-     * Return whether this thread is started.
+     * Return whether this thread is started and the task maintained by this
+     * service is active.
      * @return {@code true} if this service is started and alive
      */
     boolean isRunning();
 
     /**
+     * Indicate that this service is started.
+     * The opposite is {@link #iStopped()}.
+     * @return {@code true} if this service is started
+     */
+    boolean iStarted();
+    /**
      * If this is true we can not start any new task.
      * @return {@code true} if the service is shutdown
      */
-    boolean isFinished();
+    boolean iStopped();
 
     /**
      * What to do on application exit.

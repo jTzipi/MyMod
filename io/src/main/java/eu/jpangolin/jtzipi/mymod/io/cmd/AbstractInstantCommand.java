@@ -1,3 +1,19 @@
+/*
+ *    Copyright (c) 2022-2023 Tim Langhammer
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package eu.jpangolin.jtzipi.mymod.io.cmd;
 
 import org.slf4j.LoggerFactory;
@@ -30,9 +46,9 @@ public abstract class AbstractInstantCommand<T> implements IInstantCommand<T> {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AbstractInstantCommand.class);
     /**
-     * Arguments.
+     * List of our command AND arguments.
      */
-    protected List<String> args;
+    protected List<String> args = new ArrayList<>();
     /**
      * Command name.
      */
@@ -40,11 +56,12 @@ public abstract class AbstractInstantCommand<T> implements IInstantCommand<T> {
     /**
      * AbstractInstantCommand.
      * @param command command
-     * @param argsList option list
+     * @param argsList option list of arbitrary command arguments
      */
     protected AbstractInstantCommand( final String command, final List<String> argsList ) {
         this.cmd = command;
-        this.args = argsList;
+        this.args.add(command);
+        this.args.addAll(argsList);
     }
 
     /**
@@ -161,6 +178,13 @@ public abstract class AbstractInstantCommand<T> implements IInstantCommand<T> {
         return cmd;
     }
 
+    public void setArgs(List<String> argList ) {
+        Objects.requireNonNull(argList);
+        this.args.clear();
+        // IMPORTANT: Add the command name first
+        this.args.add(getName());
+        this.args.addAll(argList.stream().filter(Objects::nonNull).toList());
+    }
     /**
      * Set arguments.
      * @param firstArg first arg
@@ -170,13 +194,15 @@ public abstract class AbstractInstantCommand<T> implements IInstantCommand<T> {
     public void setArgs( String firstArg, String... otherArgs ) {
         Objects.requireNonNull(firstArg);
 
-        args.clear();
-        args.add(firstArg);
+        List<String> argL = new ArrayList<>();
+        argL.add(firstArg);
         if(null != otherArgs) {
 
-            args.addAll(Stream.of(otherArgs).filter(Objects::nonNull).toList());
+            Collections.addAll(argL, otherArgs);
 
         }
+
+        setArgs(argL);
     }
     @Override
     public List<String> getArgs() {

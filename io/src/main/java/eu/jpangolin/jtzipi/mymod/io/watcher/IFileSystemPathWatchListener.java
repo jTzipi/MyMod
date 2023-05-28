@@ -1,3 +1,19 @@
+/*
+ *    Copyright (c) 2022-2023 Tim Langhammer
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package eu.jpangolin.jtzipi.mymod.io.watcher;
 
 
@@ -42,10 +58,10 @@ public interface IFileSystemPathWatchListener {
      * That is some events are lost.
      *
      * @param parent parent dir
-     * @param path   path
+     * @param context  object
      * @param cnt    how often
      */
-    void onOverflow( Path parent, Path path, int cnt );
+    void onOverflow( Path parent, Object context, int cnt );
 
     /**
      * Reset of watch key failed.
@@ -69,7 +85,8 @@ public interface IFileSystemPathWatchListener {
     void onUnknownWatchable( Watchable wt );
 
     /**
-     * @param path
+     * Failed to register a path for watching.
+     * @param path path that failed to register for watching
      */
     void onFileNotRegistered( final Path path );
 }

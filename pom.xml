@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (c) 2022 Tim Langhammer
+  ~    Copyright (c) 2022-2023 Tim Langhammer
   ~
   ~    Licensed under the Apache License, Version 2.0 (the "License");
   ~    you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <maven.plugin.source>3.2.1</maven.plugin.source>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <lib.slf4j.version>2.0.5</lib.slf4j.version>
+        <lib.slf4j.version>2.0.7</lib.slf4j.version>
         <lib.junit.version>5.9.2</lib.junit.version>
         <lib.apache.codec>1.15</lib.apache.codec>
         <lib.openjfx.version>19</lib.openjfx.version>

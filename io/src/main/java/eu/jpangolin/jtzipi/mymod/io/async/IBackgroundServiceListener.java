@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Tim Langhammer
+ *    Copyright (c) 2022-2023 Tim Langhammer
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,14 +16,8 @@
 
 package eu.jpangolin.jtzipi.mymod.io.async;
 
-import org.slf4j.LoggerFactory;
+public interface IBackgroundServiceListener {
+     void onServiceStarted();
 
-/**
- * @author jTzipi
- */
-public class PathFinder {
-
-    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger( "PathFinder" );
-
-
+     void onServiceStopped();
 }

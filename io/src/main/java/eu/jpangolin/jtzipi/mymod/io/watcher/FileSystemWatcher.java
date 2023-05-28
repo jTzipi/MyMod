@@ -1,5 +1,5 @@
 /*
- *    Copyright (c) 2022 Tim Langhammer
+ *    Copyright (c) 2022-2023 Tim Langhammer
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -26,13 +26,23 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.nio.file.StandardWatchEventKinds.*;
 
 /**
  * File System Watcher.
+ * <p>
+ *     File System background watch service.
+ *     <br/>
+ *     For one or more path's we create the FileSystemWatcher.
+ *     with option to trace path changes.
+ *     <br/>
+ *     An ExecutorService is in charge of the service.
  *
+ *
+ * </p>
  * @author jTzipi
  */
 public final class FileSystemWatcher extends AbstractBackgroundService {
@@ -62,15 +72,18 @@ public final class FileSystemWatcher extends AbstractBackgroundService {
      * @param roots one or more root paths [1 .. ]
      * @return FileSystem Watcher
      * @throws IOException          fail to create watch service
+     * @throws IllegalArgumentException if {@code roots.length} is 0.
      * @throws NullPointerException if {@code roots}
      */
     public static FileSystemWatcher of( final boolean trace, final Path... roots ) throws IOException {
-
         Objects.requireNonNull( roots, "Path to watch is null" );
+        if( 0 == roots.length ) {
+            throw new IllegalArgumentException("At least on path to watch needed!");
+        }
 
         WatchService watchService = FileSystems.getDefault().newWatchService();
-
-        return new FileSystemWatcher( watchService, Set.of( roots ), trace );
+        Set<Path> rootS = Stream.of(roots).filter(Objects::nonNull).collect(Collectors.toSet());
+        return new FileSystemWatcher( watchService, rootS, trace );
     }
 
     /**
@@ -127,7 +140,7 @@ public final class FileSystemWatcher extends AbstractBackgroundService {
     }
 
     @Override
-    public boolean isFinished() {
+    public boolean iStopped() {
         return EXEC.isShutdown();
     }
 
@@ -136,10 +149,7 @@ public final class FileSystemWatcher extends AbstractBackgroundService {
         init();
     }
 
-    /**
-     * Start watch service.
-     * <p></p>
-     */
+
     @Override
     protected void startService() throws IOException {
 
@@ -182,18 +192,24 @@ public final class FileSystemWatcher extends AbstractBackgroundService {
         ws.close();
     }
 
-    /**
-     * Return whether this watcher is watching.
-     *
-     * @return {@code true} when watching
-     */
+
     @Override
     public boolean isRunning() {
-        return !EXEC.isShutdown() && null != task && !task.isCancelled();
+
+        // -
+        return !EXEC.isShutdown()
+                && null != task
+                && !task.isDone()
+                && !task.isCancelled();
     }
 
     private void registerRecursive( final Path rootPath ) {
         assert null != rootPath : "path is null";
+
+        // this is a depth first traversal of any path readable
+        // beneath rootPath
+        // if we can not register a path we add this to
+        // the set of unregistered paths
 
         try {
             Files.walkFileTree( rootPath, new SimpleFileVisitor<>() {
@@ -223,6 +239,11 @@ public final class FileSystemWatcher extends AbstractBackgroundService {
 
     }
 
+    /**
+     * Put a new path to watch.
+     * @param path path
+     * @param recursive register recursive other
+     */
     public void putPath( final Path path, boolean recursive ) {
         Objects.requireNonNull( path );
 
@@ -249,6 +270,9 @@ public final class FileSystemWatcher extends AbstractBackgroundService {
 
     private void register( final Path path ) {
 
+        // try to add the path to the watch service
+        // with all 3 watch event types for Path
+        // TDO : OVERFLOW??
         try {
             WatchKey key = path.register( ws, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY );
 
@@ -292,6 +316,7 @@ public final class FileSystemWatcher extends AbstractBackgroundService {
                 return;
             }
 
+            // get dir we get the event
             Path dir = keyMap.get( watchKey );
             if ( null == dir ) {
                 LOG.error( "Received change event from not registered path. Watch Key='{}'", watchKey.watchable() );
@@ -301,15 +326,38 @@ public final class FileSystemWatcher extends AbstractBackgroundService {
 
 
             for ( WatchEvent<?> wevt : watchKey.pollEvents() ) {
+
                 WatchEvent.Kind<?> wk = wevt.kind();
 
-
-                WatchEvent<Path> pwe = cast( wevt );
-                Path changedPath = dir.resolve( pwe.context() );
                 SystemWatchEvent swe = SystemWatchEvent.of( wk.name() );
 
-                // send event
-                fireStandardEvent( swe, dir, changedPath, pwe.count() );
+                // if(wk.type().isAssignableFrom(Path.class)) {
+
+                // which ?
+                switch (swe) {
+                    // Path modified/create/delete event
+                    case EVENT_CREATE, EVENT_MODIFY, EVENT_DELETE ->  {
+                        // ATTENTION
+                        // this is only for
+                        // CREATE, MODIFY, DELETE ok
+                        // not for OVERFLOW
+
+
+                        WatchEvent<Path>  pwe = cast(wevt);
+                        Path changedPath = dir.resolve( pwe.context() );
+
+                        // send event
+                        fireStandardEvent( swe, dir, changedPath, pwe.count() );
+                    }
+                    case EVENT_OVERFLOW -> {
+                        WatchEvent<Object> owe = cast(wevt);
+                        Object o = owe.context();
+                        fireOverflow(dir, o, owe.count());
+                    }
+                }
+
+
+
 
 
                 final boolean reset = watchKey.reset();
@@ -321,6 +369,7 @@ public final class FileSystemWatcher extends AbstractBackgroundService {
 
                 if ( !reset ) {
 
+                    LOG.warn("Failed to reset!");
                     fireResetFailed( dir );
 
                     keyMap.remove( watchKey );
@@ -344,7 +393,7 @@ public final class FileSystemWatcher extends AbstractBackgroundService {
                 case EVENT_CREATE -> watchListener.onCreated( parent, path, cnt );
                 case EVENT_DELETE -> watchListener.onDeleted( parent, path, cnt );
                 case EVENT_MODIFY -> watchListener.onModified( parent, path, cnt );
-                case EVENT_OVERFLOW -> watchListener.onOverflow( parent, path, cnt );
+
                 default -> LOG.warn( "System Event unknown '{}'", event );
             }
 
@@ -352,6 +401,11 @@ public final class FileSystemWatcher extends AbstractBackgroundService {
 
     }
 
+    private void fireOverflow( Path parent, Object obj, int count ) {
+        for ( IFileSystemPathWatchListener watchListener : listenerList ) {
+            watchListener.onOverflow(parent, obj, count);
+        }
+    }
     private void fireResetFailed( Path dir ) {
 
         for ( IFileSystemPathWatchListener watchListener : listenerList ) {
