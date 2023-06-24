@@ -31,7 +31,7 @@ import java.util.Objects;
  * <p>
  *     The idea is to wrap a node with a group to preserve the
  *     rotation in a layout manager.
- *     Details of the idea can be found <a href="">link</a>
+ *     Details of the idea can be found <a href="https://stackoverflow.com/questions/18610609/how-to-display-text-vertically-on-a-button-in-javafx">link</a>
  * </p>
  * @author jTzipi
  */
