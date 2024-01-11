@@ -23,7 +23,6 @@ import java.util.*;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.joining;
@@ -67,18 +66,20 @@ public final class LsblkCmd extends AbstractInstantCommand<LsblkCmd.Lsblk> {
             LsblkCmdOptions.PAIRS,
             LsblkCmdOptions.BINARY,
             LsblkCmdOptions.OUTPUT,
+            // IMPORTANT: the order of the columns MUST match the order of the LSBLK Regular expression match groups
+            // - see LSBLK_REG
             () -> Stream.of(
                     LsblkColumn.TYPE,
                     LsblkColumn.TRAN,
-                    LsblkColumn.SIZE,
                     LsblkColumn.FSTYPE,
                     LsblkColumn.FSAVAIL,
+                    LsblkColumn.SIZE,
                     LsblkColumn.MOUNT,
                     LsblkColumn.SERIAL,
                     LsblkColumn.NAME,
                     LsblkColumn.LABEL,
                     LsblkColumn.UUID
-            ).map(Supplier::get).collect(Collectors.joining(", ")));
+            ).map(Supplier::get).collect( joining(",")));
 
 
     /**
