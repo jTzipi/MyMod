@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.stream.Stream;
+
 
 /**
  * AbstractInstantCommand.
@@ -48,22 +48,26 @@ public abstract class AbstractInstantCommand<T> implements IInstantCommand<T> {
     /**
      * List of our command AND arguments.
      */
-    protected List<String> args = new ArrayList<>();
+    protected List<String> cmdArgL;
     /**
      * Command name.
      */
     protected String cmd;
+
     /**
      * AbstractInstantCommand.
-     * @param command command
-     * @param argsList option list of arbitrary command arguments
+     * @param commandStr command name
+     *
+     * @param argStr arbitrary command arguments
      */
-    protected AbstractInstantCommand( final String command, final List<String> argsList ) {
-        this.cmd = command;
-        this.args.add(command);
-        this.args.addAll(argsList);
+    protected AbstractInstantCommand(final String commandStr, final List<String> argStr ) {
+        this.cmd = commandStr;
+        this.cmdArgL = argStr;
     }
 
+    protected AbstractInstantCommand(final String commandStr, String... argsA ) {
+        this(commandStr, Arrays.asList(argsA));
+    }
     /**
      * Parse the raw result wrapped in the command result and return
      * the value object wrapped in an Optional.
@@ -74,20 +78,15 @@ public abstract class AbstractInstantCommand<T> implements IInstantCommand<T> {
     protected abstract Optional<T> parse(ICommandResult commandResult);
 
     @Override
-    public Optional<T> launch(long timeout, TimeUnit timeUnit, ProcessBuilder processBuilder) throws IOException, InterruptedException {
+    public Optional<T> launch(long timeout, TimeUnit timeUnit) throws IOException, InterruptedException {
         timeout = Math.max(timeout, MIN_TIMEOUT);
         if (null == timeUnit) {
             timeUnit = DEFAULT_TIMEOUT_UNIT;
         }
 
-        //
-        // - use the builder if set.
-        //   if not we create a simple builder with arguments
-        ProcessBuilder pb = null == processBuilder
-                ? new ProcessBuilder(getArgs())
-                : processBuilder;
+        final ProcessBuilder pb = getProcessBuilder();
 
-
+        LOG.info("Start command '{}' with arg '{}'", cmd, cmdArgL);
         // - arguments for our ICommandResult
         //
 
@@ -178,34 +177,29 @@ public abstract class AbstractInstantCommand<T> implements IInstantCommand<T> {
         return cmd;
     }
 
-    public void setArgs(List<String> argList ) {
-        Objects.requireNonNull(argList);
-        this.args.clear();
-        // IMPORTANT: Add the command name first
-        this.args.add(getName());
-        this.args.addAll(argList.stream().filter(Objects::nonNull).toList());
-    }
-    /**
-     * Set arguments.
-     * @param firstArg first arg
-     * @param otherArgs more args
-     * @throws NullPointerException if {@code firstArg}
-     */
-    public void setArgs( String firstArg, String... otherArgs ) {
-        Objects.requireNonNull(firstArg);
 
-        List<String> argL = new ArrayList<>();
-        argL.add(firstArg);
-        if(null != otherArgs) {
-
-            Collections.addAll(argL, otherArgs);
-
-        }
-
-        setArgs(argL);
-    }
     @Override
     public List<String> getArgs() {
-        return args;
+        return cmdArgL;
+    }
+
+    public void setArgs(final List<String> cmdArgList) {
+        Objects.requireNonNull(cmdArgList);
+        this.cmdArgL = cmdArgList;
+    }
+
+
+
+    /**
+     * Check whether we can parse the result.
+     * @param result result
+     * @return {@code true} if the result is parsable
+     * @throws NullPointerException if {@code result}
+     */
+    protected static boolean isCommandResultParsable(ICommandResult result) {
+        Objects.requireNonNull(result);
+        return result.getError() == null
+                && null != result.getRawResult()
+                && !Objects.equals(ICommandResult.RAW_RESULT_ERROR, result.getRawResult());
     }
 }

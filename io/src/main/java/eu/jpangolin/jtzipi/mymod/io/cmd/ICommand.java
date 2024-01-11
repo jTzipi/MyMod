@@ -16,11 +16,26 @@
 
 package eu.jpangolin.jtzipi.mymod.io.cmd;
 
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Abstraction of a OS native command.
+ * Abstraction of an OS native command.
+ * <p>
+ *     <u>Command structure</u>
+ *     <br/>
+ *     <ul>
+ *         <li>command name ({@link #getName()})</li>
  *
+ *         <li>command arguments ({@link #getArgs()}) and options</li>
+ *     </ul>
+ *
+ *     like {@literal $ which -a pip pipx python}
+ *     where `{@code which}` is the command name.
+ *     `{@code -a}` is the option.
+ *     `{@code pip pipx pyhton}` are the arguments.
+ * </p>
  * @author jTzipi
  */
 public interface ICommand {
@@ -32,9 +47,29 @@ public interface ICommand {
     String getName();
 
     /**
-     * Return argument s.
-     * @return argument list
+     * Return argument list.
+     * <p>
+     *     This contains both the options (prefixed with {@literal --}, and
+     *     the arguments of the command).
+     * </p>
+     * @return option/argument list
      */
     List<String> getArgs();
+
+
+
+    /**
+     * Return ProcessBuilder for the args set.
+     * Here we only create the builder, and didn't configure .
+     * @return ProcessBuilder
+     * @throws NullPointerException if {@link #getName()} is null
+     */
+    default ProcessBuilder getProcessBuilder() {
+
+        List<String> cmdList = new ArrayList<>();
+        cmdList.add(getName());
+        cmdList.addAll(getArgs());
+        return new ProcessBuilder(cmdList);
+    }
 
 }

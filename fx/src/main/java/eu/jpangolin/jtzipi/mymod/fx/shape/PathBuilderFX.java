@@ -249,7 +249,7 @@ public class PathBuilderFX implements IBuilder<javafx.scene.shape.Path> {
         LOG.info("Path Pre Setup '{}'",  path );
         // and if set make path setup
         if (null != setup) {
-            setup.accept(path);
+            setup.apply(path);
             LOG.info("Path post setup '{}'", path);
         }
         return path;

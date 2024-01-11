@@ -44,6 +44,13 @@ final class StreamGobbler implements Callable<String> {
         this(inputStream, null);
     }
 
+    /**
+     * Create a new Stream Gobbler.
+     * @param inputStream input stream
+     * @param inputConsumer input stream string consumer ( Optional )
+     * @return StreamGobbler
+     * @throws NullPointerException if {@code inputStream}
+     */
     public static StreamGobbler of( final InputStream inputStream, Consumer<String> inputConsumer) {
 Objects.requireNonNull(inputStream);
 return new StreamGobbler(inputStream, inputConsumer);

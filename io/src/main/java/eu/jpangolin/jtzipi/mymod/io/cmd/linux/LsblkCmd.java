@@ -17,18 +17,20 @@
 package eu.jpangolin.jtzipi.mymod.io.cmd.linux;
 
 import eu.jpangolin.jtzipi.mymod.io.cmd.*;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.joining;
 
 /**
  * Wrapper for 'lsblk' command.
+ * For details see <a href="https://www.linux.org/docs/man8/lsblk.html">this</a> link.
  */
 public final class LsblkCmd extends AbstractInstantCommand<LsblkCmd.Lsblk> {
 
@@ -54,39 +56,87 @@ public final class LsblkCmd extends AbstractInstantCommand<LsblkCmd.Lsblk> {
     private static final String CMD = "lsblk";  // the command name
 
     /**
-     * Default Option we set for 'lsblk'
+     * Default Option we set for 'lsblk'.
      *
      * -b: byte size
      * -P: pairwise result
      * -i: Ascii Format
      * -o: Option to display(Must be last)
      */
-    public static final String OPT_DEF = "-bPio"; // the option we use default
+    private static final List<Supplier<String>> ARGS_DEF =  List.of(LsblkCmdOptions.ASCII,
+            LsblkCmdOptions.PAIRS,
+            LsblkCmdOptions.BINARY,
+            LsblkCmdOptions.OUTPUT,
+            () -> Stream.of(
+                    LsblkColumn.TYPE,
+                    LsblkColumn.TRAN,
+                    LsblkColumn.SIZE,
+                    LsblkColumn.FSTYPE,
+                    LsblkColumn.FSAVAIL,
+                    LsblkColumn.MOUNT,
+                    LsblkColumn.SERIAL,
+                    LsblkColumn.NAME,
+                    LsblkColumn.LABEL,
+                    LsblkColumn.UUID
+            ).map(Supplier::get).collect(Collectors.joining(", ")));
+
 
     /**
-     * Default argument array.
+     * All options for 'lsblk'.
+     *
+     *
      */
-    public static final String[] ARGS_DEF = {
-            //
-            // -- command array
-            //
-            //    1.) bytes(b) Pairwise(P) with ASCII only(i) option(o)
-            //    2.-10.) Arguments for option Column
+    public enum LsblkCmdOptions implements Supplier<String> {
 
-            OPT_DEF,
-            String.join(",",
-                    LsblkColumn.TYPE.opt,
-                    LsblkColumn.TRAN.opt,
-                    LsblkColumn.SIZE.opt,
-                    LsblkColumn.FSTYPE.opt,
-                    LsblkColumn.FSAVAIL.opt,
-                    LsblkColumn.MOUNT.opt,
-                    LsblkColumn.SERIAL.opt,
-                    LsblkColumn.NAME.opt,
-                    LsblkColumn.LABEL.opt,
-                    LsblkColumn.UUID.opt
-            )
-    };
+
+        /**
+         * List every device.
+         */
+        ALL("all"),
+
+        /**
+         * Print only ASCII.
+         */
+        ASCII("ascii"),
+        /**
+         * Print size in bytes.
+         */
+        BINARY("bytes"),
+
+        /**
+         * Show information about filesystem.
+         */
+        FILESYSTEM("fs"),
+        /**
+         * Print Json Formatted.
+         */
+        JSON("json"),
+
+
+        /**
+         * List of output columns.
+         * @see LsblkColumn
+         */
+        OUTPUT("output"),
+        /**
+         * Print pairwise.
+         */
+        PAIRS("pairs");
+
+        private final String opt;
+
+        LsblkCmdOptions(String optStr ) {
+    this.opt = "--" +optStr;
+
+        }
+
+        @Override
+        public String get() {
+           return opt;
+        }
+
+
+    }
 
     /**
      * A lsblk entry describing a Read Only Memory block device.
@@ -133,7 +183,49 @@ public final class LsblkCmd extends AbstractInstantCommand<LsblkCmd.Lsblk> {
     }
 
     /**
-     * Option for Linux Command 'lsblk'.
+     * Option for Linux Command 'lsblk' option `-o`.
+     * Here are the keys and values.
+     * <br/>
+     *         NAME  Gerätename
+     *        KNAME  interner Kernel-Gerätename
+     *         PATH  Pfad zum Geräteknoten
+     *      MAJ:MIN  Hauptversion:Nebengerätenummer
+     *      FSAVAIL  verfügbare Dateisystemgröße
+     *       FSSIZE  Dateisystemgröße
+     *       FSTYPE  Dateisystemtyp
+     *       FSUSED  belegte Dateisystemgröße
+     *       FSUSE%  prozentuale Dateisystembelegung
+     *        FSVER  Dateisystemversion
+     *   MOUNTPOINT  Einhängeort des Gerätes
+     *        LABEL  Dateisystem-BEZEICHNUNG
+     *         UUID  Dateisystem-UUID
+     *       PTUUID  Partitionstabellenbezeichner (üblicherweise UUID)
+     *       PTTYPE  Partitionstabellentyp
+     *     PARTTYPE  Partitionstyp-Code oder -UUID
+     *  PARTTYPENAME  Partitionstypname
+     *    PARTLABEL  Partitions-BEZEICHNUNG
+     *     PARTUUID  Partitions-UUID
+     *    PARTFLAGS  Partitionsmarkierungen
+     *           RA  Read-ahead-Cache des Geräts
+     *           RO  Nur-Lese-Gerät
+     *           RM  entfernbares Gerät
+     *      HOTPLUG  Wechseldatenträger oder Hotplug-Gerät (USB, PCMCIA …)
+     *        MODEL  Gerätebezeichner
+     *       SERIAL  Festplatten-Seriennummer
+     *         SIZE  Größe des Geräts
+     *        STATE  Status des Geräts
+     *        OWNER  Benutzername
+     *        GROUP  Gruppenname
+     *         MODE  Geräteknoten-Berechtigungen
+     *    ALIGNMENT  Ausrichtungs-Position
+     *       MIN-IO  Minimale E/A-Größe
+     *       OPT-IO  Optimale E/A-Größe
+     *      PHY-SEC  physische Sektorgröße
+     *      LOG-SEC  logische Sektorgröße
+     *         ROTA  Rotationsgerät
+     *        SCHED  Name des E/A-Schedulers
+     *      RQ-SIZE  Größe der Warteschlange für Anforderungen
+     *         TYPE  Gerätetyp
      */
     public enum LsblkColumn implements Supplier<String> {
 
@@ -207,14 +299,19 @@ public final class LsblkCmd extends AbstractInstantCommand<LsblkCmd.Lsblk> {
     public record Lsblk(Map<String, Disk> diskMap, List<Rom> romList) {
     }
 
-
+    /**
+     * Lsblk command with default arguments.
+     */
+    public LsblkCmd() {
+        this(ARGS_DEF.stream().map(Supplier::get).toList());
+    }
 
     /**
      * Lsblk Command.
-     * @param argList argument
+     * @param cmdArgStr argument
      */
-    public LsblkCmd(List<String> argList) {
-        super(CMD, argList);
+    public LsblkCmd(List<String> cmdArgStr) {
+        super(CMD, cmdArgStr);
     }
 
 
@@ -223,11 +320,10 @@ public final class LsblkCmd extends AbstractInstantCommand<LsblkCmd.Lsblk> {
     Objects.requireNonNull(commandResult);
         // if we have no error nor error input we
         // parse raw result
-        if( null == commandResult.getError() && !ICommandResult.RAW_RESULT_ERROR.equals(commandResult.getRawResult())) {
 
-            return Optional.of(parseLsblk(commandResult.getRawResult()));
-        }
-        return Optional.empty();
+        return isCommandResultParsable(commandResult)
+         ? Optional.of(parseLsblk(commandResult.getRawResult()))
+            : Optional.empty();
     }
 
     private static Lsblk parseLsblk(String rawResult) {

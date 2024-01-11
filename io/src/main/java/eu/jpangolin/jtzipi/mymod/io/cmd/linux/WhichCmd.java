@@ -18,30 +18,84 @@ package eu.jpangolin.jtzipi.mymod.io.cmd.linux;
 
 import eu.jpangolin.jtzipi.mymod.io.cmd.AbstractInstantCommand;
 import eu.jpangolin.jtzipi.mymod.io.cmd.ICommandResult;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
-public class WhichCmd extends AbstractInstantCommand<WhichCmd.Which> {
+/**
+ * Run the 'which' command.
+ * @author jTzipi
+ */
+public final class WhichCmd extends AbstractInstantCommand<WhichCmd.Which> {
 
+    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(WhichCmd.class);
     private static final String CMD = "which";
 
 
-    record Which() {
+    public enum WhichOption implements Supplier<String> {
+
+
+        ALL("all"),
+        SKIP_DOT("skip-dot"),
+        SKIP_TILDE("skip-tilde"),
+        SHOW_DOT("show-dot"),
+        SHOW_TILDE("show-tilde");
+
+        private final String arg;
+
+        WhichOption(String argStr ) {
+        this.arg = "--"+argStr;
+
+        }
+
+
+        @Override
+        public String get() {
+            return arg;
+        }
+
 
     }
 
-    protected WhichCmd(List<String> args) {
+    /**
+     * Result of 'which' command as record.
+     * @param resultList found path(s)
+     */
+    protected record Which(List<String> resultList) {
+    }
+
+    private WhichCmd(String... args) {
         super(CMD, args);
     }
-    public static WhichCmd of( final String progStr ) {
-        return new WhichCmd(List.of(Objects.requireNonNull(progStr)));
+
+
+    /**
+     * Run the which command with one or more programs to search.
+     * @param args option and argument
+     * @return instance of which command
+     */
+    public static WhichCmd of( final String args ) {
+        Objects.requireNonNull(args);
+
+        return new WhichCmd(args);
     }
 
     @Override
     protected Optional<Which> parse(ICommandResult commandResult) {
-        return Optional.empty();
+
+        return isCommandResultParsable(commandResult)
+                ? Optional.of(parseRaw(commandResult.getRawResult()))
+                : Optional.empty();
     }
 
+    private static Which parseRaw( String whichResultStr ) {
+
+        List<String> pathL = Stream.of(whichResultStr.split("\n")).toList();
+        LOG.info("Read path list {}", pathL);
+        return new Which(pathL);
+    }
 }

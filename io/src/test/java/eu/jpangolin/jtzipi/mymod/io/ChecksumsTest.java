@@ -23,8 +23,11 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -33,7 +36,8 @@ class ChecksumsTest {
 
 
     private static final Logger LG = LoggerFactory.getLogger( "ChecksumTest" );
-    private static final String PATH_DIGEST = "c37fadce08e49988721f2fa8cba2f3c0e2b695a2801e4cd1c8cd41e5bf9da25b936fcd351c87c3adfdf316e6b8fecc5dee9f3514b15a559fdbe653842494b947";
+    private static final String PATH_DIGEST = "524e3fa9810e3ddbc7463f91efdc3a7da2ea30684c0c6b71222d41eeced897198efbb21c2f259da1c0f4b69bd7fd13271e2a0475981bfaf731097fc459eeea20";
+
 
     static {
         ModUtils.registerBouncyCastleProvider();
@@ -46,7 +50,15 @@ class ChecksumsTest {
     void setUp() {
 
 
-        path = OS.getHomeDir().resolve( "Gadi/kenya.jpg" );
+        URL resUrl = ChecksumsTest.class.getResource("ImgSheep.jpg");
+        if(null == resUrl) {
+            throw new RuntimeException( new FileNotFoundException("path to image 'ImgSheep.jpg' not found"));
+        }
+
+
+
+        path = Paths.get(resUrl.getPath());
+
         try {
             medi = MessageDigest.getInstance( "SHA512", "BC" );
         } catch ( NoSuchAlgorithmException | NoSuchProviderException e ) {

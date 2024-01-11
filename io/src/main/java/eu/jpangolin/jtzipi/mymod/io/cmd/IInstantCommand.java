@@ -63,24 +63,5 @@ public interface IInstantCommand<T> extends ICommand {
      * @throws IOException I/O
      * @throws InterruptedException IE
      */
-    default Optional<T> launch(long timeout, TimeUnit timeUnit) throws IOException, InterruptedException {
-
-        ProcessBuilder pb = new ProcessBuilder(getArgs());
-        return launch(timeout, timeUnit, pb);
-    }
-
-    /**
-     * Launch the command.
-     *
-     * @param timeout timeout
-     * @param timeUnit time unit
-     * @param processBuilder proc builder
-     * @return the parsed value object wrapped into Optional. If {@linkplain Optional#isEmpty()}
-     *          there is probably an error
-     * @throws IOException IO
-     * @throws InterruptedException IE
-     */
-    Optional<T> launch(long timeout , TimeUnit timeUnit , ProcessBuilder processBuilder ) throws IOException , InterruptedException;
-
-
+    Optional<T> launch(long timeout, TimeUnit timeUnit) throws IOException, InterruptedException;
 }

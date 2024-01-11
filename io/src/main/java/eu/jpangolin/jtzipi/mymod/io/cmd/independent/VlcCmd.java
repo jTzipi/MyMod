@@ -23,15 +23,27 @@ import java.util.List;
 
 public class VlcCmd implements IProgramCommand {
 
+
+    private static final String CMD = "vlc";
+
+    private List<String> args;
+
+    private VlcCmd(final String... argStr) {
+this.args = List.of(argStr);
+    }
+
     @Override
     public String getName() {
-        return "VLC";
+        return CMD;
     }
 
     @Override
     public List<String> getArgs() {
-        return null;
+
+        return args;
     }
+
+
 
     @Override
     public ProcessHandle start() throws IOException {

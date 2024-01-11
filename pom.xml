@@ -55,11 +55,12 @@
         <maven.compiler.target>17</maven.compiler.target>
         <maven.plugin.source>3.2.1</maven.plugin.source>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <lib.slf4j.version>2.0.7</lib.slf4j.version>
-        <lib.junit.version>5.9.2</lib.junit.version>
-        <lib.apache.codec>1.15</lib.apache.codec>
+        <lib.slf4j.version>2.0.9</lib.slf4j.version>
+        <lib.junit.version>5.10.0</lib.junit.version>
+        <lib.apache.codec>1.16.0</lib.apache.codec>
+        <lib.apache.io>2.15.0</lib.apache.io>
         <lib.openjfx.version>19</lib.openjfx.version>
-        <lib.bouncycastle>1.72</lib.bouncycastle>
+        <lib.bouncycastle>1.76</lib.bouncycastle>
     </properties>
 
 

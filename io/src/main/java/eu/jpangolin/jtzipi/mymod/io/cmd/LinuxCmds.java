@@ -37,10 +37,10 @@ public final class LinuxCmds {
      * Launch 'lsblk' command with default argument.
      *
      * @return Lsblk Command
-     * @see LsblkCmd#ARGS_DEF
+     *
      */
     public static LsblkCmd lsblk() {
-        return new LsblkCmd(Arrays.asList(LsblkCmd.ARGS_DEF));
+        return new LsblkCmd();
     }
 
 

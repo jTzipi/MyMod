@@ -19,11 +19,18 @@ package eu.jpangolin.jtzipi.mymod.io.cmd;
 import java.io.IOException;
 
 /**
- * Describes a command which start another program.
+ * Describes a command which start another (long-running) program.
+ *
+ * @author jTzipi
  */
 public interface IProgramCommand extends ICommand {
 
 
+    /**
+     * Return the ProcessHandle.
+     * @return p handle
+     * @throws IOException I/O
+     */
     ProcessHandle start() throws IOException;
 
 }
