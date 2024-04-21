@@ -17,6 +17,7 @@
 package eu.jpangolin.jtzipi.mymod.io.cmd.linux;
 
 import eu.jpangolin.jtzipi.mymod.io.cmd.AbstractInstantCommand;
+import eu.jpangolin.jtzipi.mymod.io.cmd.CommandResult;
 import eu.jpangolin.jtzipi.mymod.io.cmd.ICommandResult;
 import org.slf4j.LoggerFactory;
 
@@ -85,11 +86,10 @@ public final class WhichCmd extends AbstractInstantCommand<WhichCmd.Which> {
     }
 
     @Override
-    protected Optional<Which> parse(ICommandResult commandResult) {
+    protected CommandResult<Which> parse(String rawResultStr, Throwable t, Process p) {
 
-        return isCommandResultParsable(commandResult)
-                ? Optional.of(parseRaw(commandResult.getRawResult()))
-                : Optional.empty();
+        Which which = null == t ? parseRaw(rawResultStr) : null;
+        return new CommandResult<>(which, rawResultStr, p, t);
     }
 
     private static Which parseRaw( String whichResultStr ) {

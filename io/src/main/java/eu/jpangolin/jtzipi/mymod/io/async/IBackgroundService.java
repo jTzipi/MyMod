@@ -52,26 +52,17 @@ public interface IBackgroundService {
     /**
      * Start this service.
      */
-    void start() ;
+    void start();
 
-    /**
-     * Start this service with delay.
-     * @param delay delay [{@link #MIN_DELAY} ..
-     * @param timeUnit timeUnit
-     */
-    void startDelayed(long delay, TimeUnit timeUnit );
+
+
 
     /**
      * Stop this service.
      */
     void stop();
 
-    /**
-     * Stop this service in the future.
-     * @param time time [0 ..
-     * @param timeUnit time Unit
-     */
-    void stopDelayed( long time, TimeUnit timeUnit) ;
+
     /**
      * Short description.
      * @return description

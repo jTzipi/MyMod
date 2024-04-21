@@ -39,6 +39,14 @@ public interface ICommandResult {
      */
     Throwable getError();
 
+
+    /**
+     * Check whether we have an error.
+     * @return
+     */
+    default boolean isError() {
+        return null != getError();
+    }
     /**
      * Answer of the command.
      * This is only useful for instant commands

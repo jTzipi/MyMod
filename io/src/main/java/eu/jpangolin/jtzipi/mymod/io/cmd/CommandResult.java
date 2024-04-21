@@ -17,14 +17,16 @@
 package eu.jpangolin.jtzipi.mymod.io.cmd;
 
 /**
- * This is the 'result' of a native system command.
+ * This is the 'result' of a native system command which may hold an instance of the command.
+ * @param object Result object should be a record
  * @param result raw result
  * @param proc proc
- * @param t error
+ * @param t error (may be null)
+ * @param <R>
  *
  * @author jTzipi
  */
-record CommandResult(  String result, Process proc, Throwable t) implements ICommandResult {
+public record CommandResult<R>( R object, String result, Process proc, Throwable t) implements ICommandResult, Comparable<CommandResult<R>> {
 
 
     @Override
@@ -42,4 +44,8 @@ record CommandResult(  String result, Process proc, Throwable t) implements ICom
         return result;
     }
 
+    @Override
+    public int compareTo(CommandResult<R> o) {
+        return 0;
+    }
 }

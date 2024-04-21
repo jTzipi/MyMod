@@ -155,9 +155,11 @@ public final class ModIO {
      *
      * @param p             path to lookup
      * @param pathPredicate filter
+     * @param followLink should links be followed
      * @return list of path
      * @throws NullPointerException {@code p} is {@code null}
      * @see #lookupDir(Path)
+     * @throws IOException if I/O
      */
     public static List<Path> lookupDir( Path p, final Predicate<? super Path> pathPredicate, boolean followLink ) throws IOException {
 
@@ -535,7 +537,7 @@ public final class ModIO {
 
         try( InputStream is = cls.getResourceAsStream( fileNameStr ) ) {
             if( null == is ) {
-                throw new IllegalStateException("");
+                throw new IllegalStateException("Font InputStream is null");
             }
 
             return Font.loadFont( is, fontSize );
@@ -658,12 +660,13 @@ public final class ModIO {
                 throw new IOException( "InputStream for resource '" + fileStr + "' can not created!Was null!" );
             }
 
-            Scanner scan = new Scanner( resIs );
-            while ( scan.hasNextLine() ) {
-                sb.append( scan.nextLine() );
-                if ( appendNewLine ) {
-                    sb.append( '\n' );
+            try (Scanner scan = new Scanner(resIs)) {
+                while (scan.hasNextLine()) {
+                    sb.append(scan.nextLine());
+                    if (appendNewLine) {
+                        sb.append('\n');
 
+                    }
                 }
             }
         }
@@ -674,6 +677,7 @@ public final class ModIO {
     /**
      * Write global JaMeLime properties file.
      *
+     * @param path Path to write
      * @param prop    properties
      * @param comment comment (optional)
      * @throws IOException          io
@@ -733,7 +737,7 @@ public final class ModIO {
         return null == ft ? Optional.empty(): Optional.of(ft);
     }
 
-    private static void findDirsRecursive( Path path, List<Path> dirList, LinkOption... lop ) {
+    private static void findDirsRecursive(Path path, List<? super Path> dirList, LinkOption... lop ) {
 
         // we collect valid dirs
         if ( !Files.isReadable( path ) || !Files.isDirectory( path, lop ) ) {

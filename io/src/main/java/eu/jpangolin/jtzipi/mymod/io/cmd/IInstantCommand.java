@@ -49,7 +49,7 @@ public interface IInstantCommand<T> extends ICommand {
      * @throws IOException I/O
      * @throws InterruptedException if cmd was
      */
-    default Optional<T> launch() throws IOException, InterruptedException {
+    default CommandResult<T> launch() throws IOException, InterruptedException {
 
         return launch(DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_UNIT);
     }
@@ -63,5 +63,5 @@ public interface IInstantCommand<T> extends ICommand {
      * @throws IOException I/O
      * @throws InterruptedException IE
      */
-    Optional<T> launch(long timeout, TimeUnit timeUnit) throws IOException, InterruptedException;
+    CommandResult<T> launch(long timeout, TimeUnit timeUnit) throws IOException, InterruptedException;
 }

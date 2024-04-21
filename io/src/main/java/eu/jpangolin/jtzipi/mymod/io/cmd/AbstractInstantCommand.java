@@ -32,7 +32,7 @@ import java.util.concurrent.*;
  *     The result can be inspected with the {@link ICommandResult}
  *     we create from the native command call.
  *     <br/>
- *      The user only needs to override the {@linkplain #parse(ICommandResult)} method.
+ *      The user only needs to override the {@linkplain #parse(String, Throwable, Process)} method.
  *
  *      Either there is a valid result or we can return an empty .
  *      <br/>
@@ -40,9 +40,9 @@ import java.util.concurrent.*;
  *      the {@link #launch()} method.
  * </p>
  * @author jTzipi
- * @param <T> Type of command result value object
+ * @param <R> Record Type of command result value object
  */
-public abstract class AbstractInstantCommand<T> implements IInstantCommand<T> {
+public abstract class AbstractInstantCommand<R> implements IInstantCommand<R> {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AbstractInstantCommand.class);
     /**
@@ -71,20 +71,20 @@ public abstract class AbstractInstantCommand<T> implements IInstantCommand<T> {
     /**
      * Parse the raw result wrapped in the command result and return
      * the value object wrapped in an Optional.
-     * @param commandResult command result
+     *
      * @return Value Object of the command
      * @throws NullPointerException if {@code commandResult} is null
      */
-    protected abstract Optional<T> parse(ICommandResult commandResult);
+    protected abstract CommandResult<R> parse(String rawResultStr, Throwable t, Process proc);
 
     @Override
-    public Optional<T> launch(long timeout, TimeUnit timeUnit) throws IOException, InterruptedException {
+    public CommandResult<R> launch(long timeout, TimeUnit timeUnit) throws IOException, InterruptedException {
         timeout = Math.max(timeout, MIN_TIMEOUT);
         if (null == timeUnit) {
             timeUnit = DEFAULT_TIMEOUT_UNIT;
         }
 
-        final ProcessBuilder pb = getProcessBuilder();
+        ProcessBuilder pb = getProcessBuilder();
 
         LOG.info("Start command '{}' with arg '{}'", cmd, cmdArgL);
         // - arguments for our ICommandResult
@@ -136,9 +136,11 @@ public abstract class AbstractInstantCommand<T> implements IInstantCommand<T> {
 
             }
         } else {
+            LOG.warn("Command '{}' failed!? let see if it's alive...", getName());
+
             if(p.isAlive()) {
 
-                LOG.warn("The command {} is not exited" , getName());
+                LOG.warn("The command  is not exited");
             }
 
             //
@@ -163,14 +165,14 @@ public abstract class AbstractInstantCommand<T> implements IInstantCommand<T> {
 
             } catch (ExecutionException | TimeoutException e) {
 
-                LOG.warn("Command {} did not exit and we can't obtain the error stream", getName(), e );
+                LOG.warn("Command '{}' did not exit and we can't obtain the error stream", getName(), e );
                 t = e.getCause();
             }
 
         }
 
         // now parse the java value object
-        return parse(new CommandResult(rawResult, p, t));
+        return parse(rawResult, t, p);
     }
     @Override
     public String getName() {
@@ -190,16 +192,5 @@ public abstract class AbstractInstantCommand<T> implements IInstantCommand<T> {
 
 
 
-    /**
-     * Check whether we can parse the result.
-     * @param result result
-     * @return {@code true} if the result is parsable
-     * @throws NullPointerException if {@code result}
-     */
-    protected static boolean isCommandResultParsable(ICommandResult result) {
-        Objects.requireNonNull(result);
-        return result.getError() == null
-                && null != result.getRawResult()
-                && !Objects.equals(ICommandResult.RAW_RESULT_ERROR, result.getRawResult());
-    }
+
 }

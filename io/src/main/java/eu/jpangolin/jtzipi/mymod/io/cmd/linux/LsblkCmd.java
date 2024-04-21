@@ -297,7 +297,8 @@ public final class LsblkCmd extends AbstractInstantCommand<LsblkCmd.Lsblk> {
      * @param diskMap list of disks
      * @param romList list of roms
      */
-    public record Lsblk(Map<String, Disk> diskMap, List<Rom> romList) {
+    public record Lsblk(Map<String, Disk> diskMap, List<Rom> romList)  {
+
     }
 
     /**
@@ -317,18 +318,18 @@ public final class LsblkCmd extends AbstractInstantCommand<LsblkCmd.Lsblk> {
 
 
     @Override
-    protected Optional<Lsblk> parse(ICommandResult commandResult) {
-    Objects.requireNonNull(commandResult);
+    protected CommandResult<Lsblk> parse(String rawResultStr, Throwable t, Process proc) {
+
         // if we have no error nor error input we
         // parse raw result
 
-        return isCommandResultParsable(commandResult)
-         ? Optional.of(parseLsblk(commandResult.getRawResult()))
-            : Optional.empty();
+        Lsblk lsblk = null == t  ? parseLsblk(rawResultStr) : null;
+
+        return new CommandResult<>(lsblk, rawResultStr, proc, t);
     }
 
-    private static Lsblk parseLsblk(String rawResult) {
-
+    private static Lsblk parseLsblk(String rawResultStr) {
+        Objects.requireNonNull(rawResultStr);
 
         // Disk map and Rom list
         final Map<String, Disk> diskMap = new HashMap<>();
@@ -337,7 +338,7 @@ public final class LsblkCmd extends AbstractInstantCommand<LsblkCmd.Lsblk> {
         Disk lastDisk = null;
 
 
-        for (String line : rawResult.lines().toList()) {
+        for (String line : rawResultStr.lines().toList()) {
 
             // parse raw line
             EnumMap<LsblkColumn, String> rowMap = parseLsblkRow(line);

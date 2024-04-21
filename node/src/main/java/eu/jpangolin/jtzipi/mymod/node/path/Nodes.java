@@ -19,6 +19,7 @@ package eu.jpangolin.jtzipi.mymod.node.path;
 import eu.jpangolin.jtzipi.mymod.io.ModIO;
 import eu.jpangolin.jtzipi.mymod.io.OS;
 import eu.jpangolin.jtzipi.mymod.io.PathInfo;
+import eu.jpangolin.jtzipi.mymod.io.cmd.CommandResult;
 import eu.jpangolin.jtzipi.mymod.io.cmd.LinuxCmds;
 import eu.jpangolin.jtzipi.mymod.io.cmd.linux.LsblkCmd;
 import org.slf4j.LoggerFactory;
@@ -68,18 +69,18 @@ public final class Nodes {
 
 
 
-        Optional<LsblkCmd.Lsblk> result = LinuxCmds.lsblk().launch();
+        CommandResult<LsblkCmd.Lsblk> result = LinuxCmds.lsblk().launch();
 
 
         List<DrivePathNode> driveList = new ArrayList<>();
         // Did not find anything or error
-        if(result.isEmpty())  {
+        if(result.isError())  {
 
             LOG.warn("No drives found");
             return driveList;
         }
 
-        LsblkCmd.Lsblk lsblk = result.get();
+        LsblkCmd.Lsblk lsblk = result.object();
         String userName = OS.getUser();
 
         // parent path where all linux media devices are mount

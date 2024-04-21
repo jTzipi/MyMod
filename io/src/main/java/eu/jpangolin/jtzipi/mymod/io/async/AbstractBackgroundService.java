@@ -65,7 +65,7 @@ public abstract class AbstractBackgroundService implements IBackgroundService {
      * Set a new logger.
      * @param logger logger
      */
-    public final static void setLogger( org.slf4j.Logger logger ) {
+    public static void setLogger( org.slf4j.Logger logger ) {
         AbstractBackgroundService.LOG = Objects.requireNonNull(logger);
     }
 
@@ -143,17 +143,7 @@ public abstract class AbstractBackgroundService implements IBackgroundService {
         }
     }
 
-    @Override
-    public void startDelayed(long delay, TimeUnit timeUnit) {
-        TimePerUnit tpu = new TimePerUnit(delay, timeUnit, new Range<>(MIN_DELAY, MAX_DELAY, true));
-        Executors.newSingleThreadScheduledExecutor().schedule(this::start, tpu.time(), tpu.timeUnit());
-    }
-
-    @Override
-    public void stopDelayed(long delay, TimeUnit timeUnit)  {
-        TimePerUnit tpu = new TimePerUnit(delay, timeUnit, new Range<>(MIN_DELAY, MAX_DELAY, true));
-        Executors.newSingleThreadScheduledExecutor().schedule(this::stop, tpu.time(), tpu.timeUnit());
-    }
+    
 
     /**
      * Optional things to do after shutdown.

@@ -22,19 +22,18 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.FileImageInputStream;
-import javax.imageio.stream.ImageInputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.WeakHashMap;
 
 /**
@@ -45,7 +44,7 @@ import java.util.WeakHashMap;
  * I only add null checks
  * </p>
  * <p><u>From the doc of GraphicsUtilities</u></p>
- * <p><code>GraphicsUtilities</code> contains a set of tools to perform
+ * <p>{@code GraphicsUtilities} contains a set of tools to perform
  * common graphics operations easily.
  * These operations are divided into
  * several themes, listed below.</p>
@@ -64,7 +63,7 @@ import java.util.WeakHashMap;
  * performance.</p>
  * <p>All these methodes are both faster than
  * {@link java.awt.Image#getScaledInstance(int, int, int)} and produce
- * better-looking results than the various <code>drawImage()</code> methods
+ * better-looking results than the various {@code drawImage()} methods
  * in {@link Graphics}, which can be used for image scaling.</p>
  * Image Manipulation
  * <p>This class provides two methods to get and set pixels in a buffered image.
@@ -77,6 +76,32 @@ import java.util.WeakHashMap;
 public final class ImageUtils {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger( ImageUtils.class );
+    /**
+     * Minimale Bild Dimension Pixel.
+     */
+    public static final int MIN_SIZE = 17;
+    /**
+     * Maximale Bild Dimension Pixel. 64.000 Pixel sollte wohl okay sein.
+     */
+    public static final int MAX_SIZE = 64_000;
+
+    /**
+     * Minimaler Skalierfaktor.
+     */
+    public static final float MIN_SCALE_FACTOR = 1.1F;
+    /**
+     * Default Skalierfaktor.
+     */
+    public static final float DEF_SCALE_FACTOR = 2F;
+    /**
+     * Maximaler Skalierfaktor.
+     */
+    public static final float MAX_SCALE_FACTOR = 2F;
+
+    public static final double ROTATE_DEG_90_CW = 90D;
+    public static final double ROTATE_DEG_180 = 180D;
+
+    public static final double ROTATE_DEG_270_CW = 270D;
 
     // cache for image reader
     private static final WeakHashMap<String, ImageReader> IMG_READER_MAP = new WeakHashMap<>();
@@ -557,10 +582,10 @@ public final class ImageUtils {
 
     /**
      * <p>Returns an array of pixels, stored as integers, from a
-     * <code>BufferedImage</code>. The pixels are grabbed from a rectangular
+     * {@code BufferedImage}. The pixels are grabbed from a rectangular
      * area defined by a location and two dimensions. Calling this method on
-     * an image of type different from <code>BufferedImage.TYPE_INT_ARGB</code>
-     * and <code>BufferedImage.TYPE_INT_RGB</code> will unmanage the image.</p>
+     * an image of type different from {@code BufferedImage.TYPE_INT_ARGB}
+     * and {@code BufferedImage.TYPE_INT_RGB} will unmanage the image.</p>
      *
      * @param img    the source image
      * @param x      the x location at which to start grabbing pixels
@@ -568,9 +593,9 @@ public final class ImageUtils {
      * @param w      the width of the rectangle of pixels to grab
      * @param h      the height of the rectangle of pixels to grab
      * @param pixels a pre-allocated array of pixels of size w*h; can be null
-     * @return <code>pixels</code> if non-null, a new array of integers
+     * @return {@code pixels} if non-null, a new array of integers
      * otherwise
-     * @throws IllegalArgumentException is <code>pixels</code> is non-null and
+     * @throws IllegalArgumentException is {@code pixels} is non-null and
      *                                  of length &lt; w*h
      */
     public static int[] getPixels( final BufferedImage img,
@@ -634,9 +659,122 @@ public final class ImageUtils {
         }
     }
 
+    /**
+     * Spiegelt ein Bild entlang der Y-Achse.
+     * Das Bild wird also auf den Kopf gestellt.
+     * @param bufImage Bild
+     * @return Das gespiegelte Bild. {@code null} wenn {@code bufImage} null
+     *
+     */
+    public static BufferedImage mirrorY(BufferedImage bufImage) {
+        Objects.requireNonNull(bufImage, "");
+
+        int w = bufImage.getWidth();
+        int h = bufImage.getHeight();
+
+
+        BufferedImage ret = createCompatibleImage(bufImage, w, h);
+        Graphics2D g2D = ret.createGraphics();
+        g2D.translate(0, h);
+        g2D.scale(1, -1);
+        g2D.drawRenderedImage(bufImage, null);
+        g2D.dispose();
+
+        return ret;
+    }
+
+    /**
+     * Spiegel das Bild entlang der X Achse.
+     * Das Bild wird also von rechts nach links gedreht.
+     * @param bufImage Bild
+     * @return Das gespiegelte Bild.  {@code null} wenn {@code bufImage} null
+     */
+    public static BufferedImage mirrorX(BufferedImage bufImage) {
+        Objects.requireNonNull(bufImage, "Image is null!");
+        int w = bufImage.getWidth();
+        int h = bufImage.getHeight();
+
+
+        BufferedImage ret = createCompatibleImage(bufImage, w, h);
+        Graphics2D g2D = ret.createGraphics();
+        g2D.translate(w, 0);
+        g2D.scale(-1, 1);
+        g2D.drawRenderedImage(bufImage, null);
+        g2D.dispose();
+
+        return ret;
+    }
+
+    /**
+     * Rotiert ein Bild.
+     *
+     * @param bufImage
+     *            Image Original
+     * @param angle
+     *            Winkel (sollte zwischen -360 und 360 liegen)
+     * @return gedrehtes Bild oder {@code null} wenn {@code bufImage} null
+     */
+    public static BufferedImage rotate(final BufferedImage bufImage, double angle) {
+
+        double rad = Math.toRadians(angle);
+        double sin = Math.abs(Math.sin(rad));
+        double cos = Math.abs(Math.cos(rad));
+
+        int w = bufImage.getWidth();
+        int h = bufImage.getHeight();
+        int neww = (int) Math.floor(w * cos + h * sin);
+        int newh = (int) Math.floor(h * cos + w * sin);
+
+        BufferedImage rotated = createCompatibleImage(bufImage, neww, newh);
+
+        Graphics2D graphic = rotated.createGraphics();
+        graphic.translate((neww - w) / 2, (newh - h) / 2);
+        graphic.rotate(rad, w / 2D, h / 2D);
+        graphic.drawRenderedImage(bufImage, null);
+        graphic.dispose();
+
+        return rotated;
+    }
+
+    public static BufferedImage resetImageExifTransformation( InputStream inputStream ) throws IOException {
+
+        Objects.requireNonNull( inputStream, "Der InputStrom ist null" );
+
+        // ExifReader.ExifTagOrientation oriOpt = ExifReader.parseOrientation( file ).map(
+        // Optional<ExifReader.ExifTagOrientation>::get) ;
+        Optional<ExifTagOrientation> tagOpt = ExifReader.parseTagOrientation(inputStream);
+        BufferedImage bufImage = toCompatibleImage(ImageIO.read(inputStream));
+
+        return tagOpt.isPresent() ?
+                resetExifOrientation( bufImage, tagOpt.get()) : bufImage;
+    }
+    public static BufferedImage resetImageExifTransformation(java.io.File file) throws IOException {
+        Objects.requireNonNull(file, "File ist null!");
+        return resetImageExifTransformation( Files.newInputStream( file.toPath() ));
+    }
+
+    private static BufferedImage resetExifOrientation(BufferedImage bufImage, ExifTagOrientation tag) {
+        assert null != bufImage;
+
+        // Alle Fälle.
+        //
+        bufImage = switch (tag) {
+            case ROTATE_180 ->  rotate(bufImage, ROTATE_DEG_180);
+            case ROTATE_90_CW -> rotate(bufImage, ROTATE_DEG_90_CW);
+            case ROTATE_270_CW -> rotate(bufImage, ROTATE_DEG_270_CW);
+            case MIRROR_HORIZONTAL -> mirrorX(bufImage);
+            case MIRROR_VERTICAL -> mirrorY(bufImage);
+            case MIRROR_HORIZONTAL_ROTATE_90_CW -> rotate(mirrorX(bufImage), ROTATE_DEG_90_CW);
+            case MIRROR_HORIZONTAL_ROTATE_270_CW -> rotate(mirrorX(bufImage), ROTATE_DEG_270_CW);
+            case HORIZONTAL -> bufImage; /* Default - nichts zutun */
+
+        };
+
+        return bufImage;
+    }
     private static ImageDimension tryReadDim( final File file, final ImageReader imgRead ) {
 
-        try ( final ImageInputStream iis = new FileImageInputStream( file ) ) {
+        try ( final Closeable iis = new FileImageInputStream( file ) ) {
 
 
             imgRead.setInput( iis );
@@ -646,6 +784,8 @@ public final class ImageUtils {
 
 
             return ImageDimension.of( width, height );
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
         } catch ( final IOException ioE ) {
             LOG.error( "Failed to read dimension ", ioE );
             return ImageDimension.EMPTY;
