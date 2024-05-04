@@ -34,21 +34,21 @@
     <dependencies>
         <!-- MyMod:Io -->
         <dependency>
-            <groupId>eu.jpangolin.jtzipi.mymod</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>mymod-io</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <!-- MyMod:Utils -->
         <dependency>
-            <groupId>eu.jpangolin.jtzipi.mymod</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>mymod-utils</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <!-- MyMod:Node -->
         <dependency>
-            <groupId>eu.jpangolin.jtzipi.mymod</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>mymod-node</artifactId>
             <version>${project.version}</version>
         </dependency>
