@@ -1,7 +1,7 @@
 /*
- *    Copyright (c) 2022-2023 Tim Langhammer
+ * Copyright (c) 2022-2024. Tim Langhammer
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
@@ -17,7 +17,6 @@
 package eu.jpangolin.jtzipi.mymod.io.cmd;
 
 import java.io.IOException;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -59,7 +58,7 @@ public interface IInstantCommand<T> extends ICommand {
      * The command will wait the time and unit to finish.
      * @param timeout timeout [{@linkplain #MIN_TIMEOUT} .. ]
      * @param timeUnit unit
-     * @return the parsed result wrapped with Optional
+     * @return the parsed result
      * @throws IOException I/O
      * @throws InterruptedException IE
      */

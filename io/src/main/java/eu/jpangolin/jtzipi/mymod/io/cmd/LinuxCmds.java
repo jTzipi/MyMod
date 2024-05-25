@@ -1,7 +1,7 @@
 /*
- *    Copyright (c) 2022-2023 Tim Langhammer
+ * Copyright (c) 2022-2024. Tim Langhammer
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
@@ -18,8 +18,6 @@ package eu.jpangolin.jtzipi.mymod.io.cmd;
 
 import eu.jpangolin.jtzipi.mymod.io.cmd.linux.LsblkCmd;
 import org.slf4j.LoggerFactory;
-
-import java.util.*;
 
 /**
  * Collection of useful linux commands.

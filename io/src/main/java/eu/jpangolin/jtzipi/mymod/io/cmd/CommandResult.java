@@ -1,7 +1,7 @@
 /*
- *    Copyright (c) 2022-2023 Tim Langhammer
+ * Copyright (c) 2022-2024. Tim Langhammer
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
@@ -26,7 +26,7 @@ package eu.jpangolin.jtzipi.mymod.io.cmd;
  *
  * @author jTzipi
  */
-public record CommandResult<R>( R object, String result, Process proc, Throwable t) implements ICommandResult, Comparable<CommandResult<R>> {
+public record CommandResult<R>( R object, String result, Process proc, Throwable t) implements ICommandResult {
 
 
     @Override
@@ -44,8 +44,5 @@ public record CommandResult<R>( R object, String result, Process proc, Throwable
         return result;
     }
 
-    @Override
-    public int compareTo(CommandResult<R> o) {
-        return 0;
-    }
+
 }

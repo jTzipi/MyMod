@@ -1,7 +1,7 @@
 /*
- *    Copyright (c) 2022-2023 Tim Langhammer
+ * Copyright (c) 2022-2024. Tim Langhammer
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
@@ -115,6 +115,7 @@ public final class ModUtils {
 
     /**
      * Register 'Bouncy Castle' Provider.
+     * @throws NullPointerException i
      */
     public static void registerBouncyCastleProvider() {
 
@@ -136,12 +137,12 @@ public final class ModUtils {
      * @param t launderThrowable
      * @return exception
      * @throws IllegalStateException if {@code t} is not of type {@link RuntimeException} or {@link Error}
-     * @throws NullPointerException  if {@code t} is null
+     * @throws Error if {@code t} is instanceof Error
      * @author: Brian Goetz
      */
     public static RuntimeException launderThrowable( Throwable t ) {
 
-        Objects.requireNonNull( t );
+
         if ( t instanceof RuntimeException )
             return ( RuntimeException ) t;
         else if ( t instanceof Error )

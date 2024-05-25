@@ -1,7 +1,7 @@
 /*
- *    Copyright (c) 2022-2023 Tim Langhammer
+ * Copyright (c) 2022-2024. Tim Langhammer
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
@@ -26,6 +26,17 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+/**
+ * Tree Item Notifier.
+ * <p>
+ *     This is used to watch for FileSystem Events created by the {@linkplain FileSystemWatcher}.
+ *     You can register a instance of {@linkplain AbstractPathNodeTreeItem} to update this tree item
+ *     if some changes occur related to this tree item.
+ *     <br/>
+ *     <br/>
+ *
+ * </p>
+ */
 public final class TreeItemNotifier implements IFileSystemPathWatchListener {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger( "TreeItemNotifier" );
@@ -33,7 +44,8 @@ public final class TreeItemNotifier implements IFileSystemPathWatchListener {
     private final ConcurrentMap<Path, AbstractPathNodeTreeItem> nodeCacheMap = new ConcurrentHashMap<>();
 
     private final FileSystemWatcher fsw;
-    private boolean observing;
+
+    private boolean watching;
 
     private TreeItemNotifier( final FileSystemWatcher fileSystemWatcher ) {
 
@@ -93,7 +105,7 @@ public final class TreeItemNotifier implements IFileSystemPathWatchListener {
         if ( !fsw.isRunning() && !startWatcherIfIsNotRunning ) {
 
             LOG.warn( "FileSystemWatcher is not watching and you don't allow to start. Can't watch for events!" );
-            this.observing = false;
+
             return;
         }
 
@@ -105,12 +117,20 @@ public final class TreeItemNotifier implements IFileSystemPathWatchListener {
             fsw.start();
         }
 
-
-        this.observing = true;
+        this.watching = true;
     }
 
+    public void pause() {
+        this.watching = false;
+    }
+
+
+
     public boolean isObserving() {
-        return observing;
+        if(watching && !isFSWatching()) {
+            LOG.warn("Notifier watching but FSW is not watching!");
+        }
+        return watching;
     }
 
     @Override
@@ -165,5 +185,9 @@ public final class TreeItemNotifier implements IFileSystemPathWatchListener {
     @Override
     public void onFileNotRegistered( Path path ) {
 
+    }
+
+    private boolean isFSWatching() {
+        return fsw.isRunning();
     }
 }

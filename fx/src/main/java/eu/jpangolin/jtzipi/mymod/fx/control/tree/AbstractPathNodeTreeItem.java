@@ -1,7 +1,7 @@
 /*
- *    Copyright (c) 2022-2023 Tim Langhammer
+ * Copyright (c) 2022-2024. Tim Langhammer
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
@@ -16,10 +16,12 @@
 
 package eu.jpangolin.jtzipi.mymod.fx.control.tree;
 
-import eu.jpangolin.jtzipi.mymod.io.ModIO;
 import eu.jpangolin.jtzipi.mymod.node.INode;
 import eu.jpangolin.jtzipi.mymod.node.path.IPathNode;
-import javafx.beans.property.*;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
@@ -30,8 +32,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-
-import static eu.jpangolin.jtzipi.mymod.node.path.IPathNode.PREDICATE_ACCEPT_PATH_ALL;
 
 /**
  * Base class for {@linkplain IPathNode} wrapping tree node.
@@ -73,10 +73,13 @@ public abstract class AbstractPathNodeTreeItem extends TreeItem<IPathNode> {
      */
     public static final Predicate<? super IPathNode> PREDICATE_DIR_ONLY = IPathNode::isDir;
 
-
+    // Base Logger
     static final org.slf4j.Logger BASE_LOG = LoggerFactory.getLogger( AbstractPathNodeTreeItem.class );
+    // Filter for this tree node
     static final ObjectProperty<Predicate<? super IPathNode>> FX_GLOBAL_FILTER_PROP = new SimpleObjectProperty<>( pathNode -> true );
-
+    // Tree Item Notifier
+    // this is only useful with a FileSystemWatcher
+    // static - so this will be configured without
     static TreeItemNotifier TINO;
     /**
      * The load state.
@@ -86,6 +89,8 @@ public abstract class AbstractPathNodeTreeItem extends TreeItem<IPathNode> {
      * Should this node observable.
      */
     protected boolean observable;
+
+
     private ReadOnlyObjectWrapper<LoadState> FX_NODE_STATE_PROP_RO;
 
     protected AbstractPathNodeTreeItem( final IPathNode pathNode ) {
@@ -142,7 +147,14 @@ public abstract class AbstractPathNodeTreeItem extends TreeItem<IPathNode> {
         AbstractPathNodeTreeItem.TINO = Objects.requireNonNull( treeItemNotifier );
     }
 
-    static Stream<IPathNode> toStreamFiltered( List<INode<Path>> subNodeList ) {
+    /**
+     * Transfer a list of nodes into a stream filtered by the current filter.
+     * @param subNodeList Node List
+     * @return Stream of Nodes filtered
+     * @throws NullPointerException if {@code subNodeList}
+     */
+    static Stream<IPathNode> toStreamFiltered(List<INode<Path>> subNodeList ) {
+        Objects.requireNonNull(subNodeList);
         return subNodeList.stream()
                 .map( no -> ( IPathNode ) no )
                 .filter( FX_GLOBAL_FILTER_PROP.getValue() );

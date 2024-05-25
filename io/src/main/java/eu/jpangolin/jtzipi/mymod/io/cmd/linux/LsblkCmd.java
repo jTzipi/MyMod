@@ -1,7 +1,7 @@
 /*
- *    Copyright (c) 2022-2023 Tim Langhammer
+ * Copyright (c) 2022-2024. Tim Langhammer
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
@@ -16,7 +16,8 @@
 
 package eu.jpangolin.jtzipi.mymod.io.cmd.linux;
 
-import eu.jpangolin.jtzipi.mymod.io.cmd.*;
+import eu.jpangolin.jtzipi.mymod.io.cmd.AbstractInstantCommand;
+import eu.jpangolin.jtzipi.mymod.io.cmd.CommandResult;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
@@ -112,8 +113,6 @@ public final class LsblkCmd extends AbstractInstantCommand<LsblkCmd.Lsblk> {
          * Print Json Formatted.
          */
         JSON("json"),
-
-
         /**
          * List of output columns.
          * @see LsblkColumn
@@ -126,7 +125,7 @@ public final class LsblkCmd extends AbstractInstantCommand<LsblkCmd.Lsblk> {
 
         private final String opt;
 
-        LsblkCmdOptions(String optStr ) {
+        LsblkCmdOptions(final String optStr ) {
     this.opt = "--" +optStr;
 
         }
@@ -312,7 +311,7 @@ public final class LsblkCmd extends AbstractInstantCommand<LsblkCmd.Lsblk> {
      * Lsblk Command.
      * @param cmdArgStr argument
      */
-    public LsblkCmd(List<String> cmdArgStr) {
+    LsblkCmd(final List<String> cmdArgStr) {
         super(CMD, cmdArgStr);
     }
 
@@ -399,7 +398,7 @@ public final class LsblkCmd extends AbstractInstantCommand<LsblkCmd.Lsblk> {
         // LOG.info( "Try to parse row = {}", row );
         Matcher matcher = LSBLK_COLUMN_PATTERN.matcher(row);
         boolean found = matcher.find();
-        LOG.info("Found Lsblk option? = " + found);
+        LOG.info("Found Lsblk option? =  {}", found);
         EnumMap<LsblkColumn, String> ret = new EnumMap<>(LsblkColumn.class);
 
         for (LsblkColumn lsblkColumn : LsblkColumn.values()) {

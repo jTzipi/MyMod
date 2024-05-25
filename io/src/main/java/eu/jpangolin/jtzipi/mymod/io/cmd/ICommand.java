@@ -1,7 +1,7 @@
 /*
- *    Copyright (c) 2022-2023 Tim Langhammer
+ * Copyright (c) 2022-2024. Tim Langhammer
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
@@ -49,7 +49,7 @@ public interface ICommand {
     /**
      * Return argument list.
      * <p>
-     *     This contains both the options (prefixed with {@literal --}, and
+     *     This contains both the options (prefixed with {@literal --}, or {@literal -} and
      *     the arguments of the command).
      * </p>
      * @return option/argument list

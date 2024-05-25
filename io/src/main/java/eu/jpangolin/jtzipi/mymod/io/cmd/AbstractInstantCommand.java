@@ -1,7 +1,7 @@
 /*
- *    Copyright (c) 2022-2023 Tim Langhammer
+ * Copyright (c) 2022-2024. Tim Langhammer
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
@@ -19,7 +19,8 @@ package eu.jpangolin.jtzipi.mymod.io.cmd;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.*;
 
 
@@ -48,7 +49,7 @@ public abstract class AbstractInstantCommand<R> implements IInstantCommand<R> {
     /**
      * List of our command AND arguments.
      */
-    protected List<String> cmdArgL;
+    protected final List<String> cmdArgL;
     /**
      * Command name.
      */
@@ -79,7 +80,9 @@ public abstract class AbstractInstantCommand<R> implements IInstantCommand<R> {
 
     @Override
     public CommandResult<R> launch(long timeout, TimeUnit timeUnit) throws IOException, InterruptedException {
+        // set timeout
         timeout = Math.max(timeout, MIN_TIMEOUT);
+        // and time unit
         if (null == timeUnit) {
             timeUnit = DEFAULT_TIMEOUT_UNIT;
         }
@@ -184,13 +187,5 @@ public abstract class AbstractInstantCommand<R> implements IInstantCommand<R> {
     public List<String> getArgs() {
         return cmdArgL;
     }
-
-    public void setArgs(final List<String> cmdArgList) {
-        Objects.requireNonNull(cmdArgList);
-        this.cmdArgL = cmdArgList;
-    }
-
-
-
 
 }
